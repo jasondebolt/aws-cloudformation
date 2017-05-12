@@ -1,0 +1,72 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "iam role example",
+    "Resources": {
+        "SampleDescribeInstancesPolicy": {
+            "Properties": {
+                "PolicyDocument": {
+                    "Statement": [
+                        {
+                            "Action": [
+                                "logs:CreateLogGroup",
+                                "logs:CreateLogStream",
+                                "logs:PutLogEvents",
+                                "logs:DescribeLogStreams"
+                            ],
+                            "Effect": "Allow",
+                            "Resource": [
+                                "*"
+                            ]
+                        }
+                    ],
+                    "Version": "2012-10-17"
+                },
+                "PolicyName": "SampleDescribeInstancesPolicy",
+                "Roles": [
+                    {
+                        "Ref": "SampleRole"
+                    }
+                ]
+            },
+            "Type": "AWS::IAM::Policy"
+        },
+        "SampleRole": {
+            "Properties": {
+                "AssumeRolePolicyDocument": {
+                    "Statement": [
+                        {
+                            "Action": [
+                                "sts:AssumeRole"
+                            ],
+                            "Effect": "Allow",
+                            "Principal": {
+                                "Service": [
+                                    "ec2.amazonaws.com",
+                                    "codedeploy.amazonaws.com"
+                                ]
+                            }
+                        }
+                    ],
+                    "Version": "2012-10-17"
+                },
+                "ManagedPolicyArns": [
+                    "arn:aws:iam::aws:policy/AmazonS3FullAccess",
+                    "arn:aws:iam::aws:policy/service-role/AWSCodeDeployRole"
+                ],
+                "Path": "/"
+            },
+            "Type": "AWS::IAM::Role"
+        },
+        "SampleRoleInstanceProfile": {
+            "Properties": {
+                "Path": "/",
+                "Roles": [
+                    {
+                        "Ref": "SampleRole"
+                    }
+                ]
+            },
+            "Type": "AWS::IAM::InstanceProfile"
+        }
+    }
+}

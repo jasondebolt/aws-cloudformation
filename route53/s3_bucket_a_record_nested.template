@@ -1,0 +1,73 @@
+{
+  "AWSTemplateFormatVersion" : "2010-09-09",
+  "Description": "Template for combining all route53 and S3 templates into one nested template for creating an S3 bucket website.",
+  "Parameters": {
+    "DomainName": {
+      "Type": "String",
+      "Description": "The domain name."
+    },
+    "IAMDeployUser": {
+      "Type": "String",
+      "Description": "The IAM user who can deploy to the S3 bucket."
+    },
+    "S3BucketWebsiteEndpoint": {
+      "Type": "String",
+      "Description" : "See 'Amazon Simple Storage Service Website Endpoints' section of http://docs.aws.amazon.com/general/latest/gr/rande.html"
+    },
+    "S3BucketHostedZoneID": {
+      "Type": "String",
+      "Description" : "See 'Amazon Simple Storage Service Website Endpoints' section of http://docs.aws.amazon.com/general/latest/gr/rande.html"
+    },
+    "S3StaticWebsiteURL": {
+      "Type": "String",
+      "Default": "https://s3-us-west-2.amazonaws.com/jasondebolt-cloud-formation/s3/s3_static_website.template",
+      "Description": "Template URL for S3 static website."
+    },
+    "HostedZoneURL": {
+      "Type": "String",
+      "Default": "https://s3-us-west-2.amazonaws.com/jasondebolt-cloud-formation/route53/hosted_zone.template",
+      "Description": "Template URL for route53 Hosted zone creation."
+    },
+    "S3BucketARecordURL": {
+      "Type": "String",
+      "Default": "https://s3-us-west-2.amazonaws.com/jasondebolt-cloud-formation/route53/s3_bucket_a_record.template",
+      "Description": "Template URL for S3 bucket A record within Route53"
+    }
+  },
+  "Resources" : {
+    "S3StaticWebsite" : {
+       "Type" : "AWS::CloudFormation::Stack",
+     	 "Properties" : {
+       "TemplateURL" : { "Ref": "S3StaticWebsiteURL" },
+       "Parameters" :
+         {
+           "DomainName": { "Ref" : "DomainName"},
+           "IAMDeployUser": { "Ref" : "IAMDeployUser"}
+         }
+	     }
+    },
+    "HostedZone" : {
+       "Type" : "AWS::CloudFormation::Stack",
+       "Properties" : {
+       "TemplateURL" : { "Ref": "HostedZoneURL" },
+       "Parameters" :
+         {
+           "DomainName": { "Ref" : "DomainName" }
+         }
+	     }
+    },
+    "S3BucketARecord" : {
+       "Type" : "AWS::CloudFormation::Stack",
+       "Properties" : {
+       "TemplateURL" : { "Ref": "S3BucketARecordURL" },
+       "Parameters" :
+         {
+           "DomainName"                 : { "Ref" : "DomainName" },
+           "HostedZoneID"               : {"Fn::GetAtt": ["HostedZone", "Outputs.HostedZoneID"]},
+           "S3BucketWebsiteEndpoint"    : { "Ref" : "S3BucketWebsiteEndpoint" },
+           "S3BucketHostedZoneID"       : { "Ref" : "S3BucketHostedZoneID" }
+         }
+	     }
+    }
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Parameters": {
+    "platform": {
+      "Type": "String",
+      "AllowedValues": [
+        "production",
+        "testing"
+      ]
+    }
+  },
+  "Conditions": {
+    "isProduction": {
+      "Fn::Equals": [{"Ref": "platform"}, "production"]
+    },
+    "isTesting": {
+      "Fn::Equals": [{"Ref": "platform"}, "testing"]
+    }
+  },
+  "Resources": {
+    "MyBucket": {
+      "Type": "AWS::S3::Bucket",
+      "Properties": {
+        "BucketName": {
+          "Fn::Join": ["-", ["jbenjamin-photos", {"Fn::If": ["isProduction", "prod", "test"]}]]
+        }
+      }
+    }
+  },
+  "Outputs": {
+    "isProduction": {
+      "Description": "Whether this is a production template or not",
+      "Value": {
+        "Fn::If": ["isProduction", "true", "false"]
+      }
+    }
+  }
+}

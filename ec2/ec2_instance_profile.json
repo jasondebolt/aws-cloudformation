@@ -1,0 +1,71 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "Create an IAM Role, IAM Policy, and EC2 Instance Profile for EC2 Instances.",
+    "Resources": {
+        "EC2Role": {
+            "Properties": {
+                "AssumeRolePolicyDocument": {
+                    "Statement": [
+                        {
+                            "Action": [
+                                "sts:AssumeRole"
+                            ],
+                            "Effect": "Allow",
+                            "Principal": {
+                                "Service": [
+                                    "ec2.amazonaws.com",
+                                    "opsworks.amazonaws.com"
+                                ]
+                            }
+                        }
+                    ],
+                    "Version": "2012-10-17"
+                },
+                "ManagedPolicyArns": [
+                    "arn:aws:iam::aws:policy/AmazonS3FullAccess"
+                ],
+                "Path": "/"
+            },
+            "Type": "AWS::IAM::Role"
+        },
+        "EC2RoleInstanceProfile": {
+            "Properties": {
+                "Path": "/",
+                "Roles": [
+                    {
+                        "Ref": "EC2Role"
+                    }
+                ]
+            },
+            "Type": "AWS::IAM::InstanceProfile"
+        },
+        "LogPolicy": {
+            "Properties": {
+                "PolicyDocument": {
+                    "Statement": [
+                        {
+                            "Action": [
+                                "logs:CreateLogGroup",
+                                "logs:CreateLogStream",
+                                "logs:PutLogEvents",
+                                "logs:DescribeLogStreams"
+                            ],
+                            "Effect": "Allow",
+                            "Resource": [
+                                "*"
+                            ]
+                        }
+                    ],
+                    "Version": "2012-10-17"
+                },
+                "PolicyName": "LogPolicy",
+                "Roles": [
+                    {
+                        "Ref": "EC2Role"
+                    }
+                ]
+            },
+            "Type": "AWS::IAM::Policy"
+        }
+    }
+}

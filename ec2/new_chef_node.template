@@ -1,0 +1,533 @@
+IN VALIDATE. Data is of type InitConfigSets!!
+Data is of type InitConfigSets!!
+{'Ec2Instance': <troposphere.ec2.Instance object at 0x102c59490>, 'SecurityGroup': <troposphere.ec2.SecurityGroup object at 0x102c59050>}
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "Create an EC2 instance which automatically bootstraps a Chef node using Chef unattended installs.",
+    "Mappings": {
+        "AWSInstanceType2Arch": {
+            "c1.medium": {
+                "Arch": "PV64"
+            },
+            "c1.xlarge": {
+                "Arch": "PV64"
+            },
+            "c3.2xlarge": {
+                "Arch": "HVM64"
+            },
+            "c3.4xlarge": {
+                "Arch": "HVM64"
+            },
+            "c3.8xlarge": {
+                "Arch": "HVM64"
+            },
+            "c3.large": {
+                "Arch": "HVM64"
+            },
+            "c3.xlarge": {
+                "Arch": "HVM64"
+            },
+            "c4.2xlarge": {
+                "Arch": "HVM64"
+            },
+            "c4.4xlarge": {
+                "Arch": "HVM64"
+            },
+            "c4.8xlarge": {
+                "Arch": "HVM64"
+            },
+            "c4.large": {
+                "Arch": "HVM64"
+            },
+            "c4.xlarge": {
+                "Arch": "HVM64"
+            },
+            "cc2.8xlarge": {
+                "Arch": "HVM64"
+            },
+            "cr1.8xlarge": {
+                "Arch": "HVM64"
+            },
+            "d2.2xlarge": {
+                "Arch": "HVM64"
+            },
+            "d2.4xlarge": {
+                "Arch": "HVM64"
+            },
+            "d2.8xlarge": {
+                "Arch": "HVM64"
+            },
+            "d2.xlarge": {
+                "Arch": "HVM64"
+            },
+            "g2.2xlarge": {
+                "Arch": "HVMG2"
+            },
+            "g2.8xlarge": {
+                "Arch": "HVMG2"
+            },
+            "hi1.4xlarge": {
+                "Arch": "HVM64"
+            },
+            "hs1.8xlarge": {
+                "Arch": "HVM64"
+            },
+            "i2.2xlarge": {
+                "Arch": "HVM64"
+            },
+            "i2.4xlarge": {
+                "Arch": "HVM64"
+            },
+            "i2.8xlarge": {
+                "Arch": "HVM64"
+            },
+            "i2.xlarge": {
+                "Arch": "HVM64"
+            },
+            "m1.large": {
+                "Arch": "PV64"
+            },
+            "m1.medium": {
+                "Arch": "PV64"
+            },
+            "m1.small": {
+                "Arch": "PV64"
+            },
+            "m1.xlarge": {
+                "Arch": "PV64"
+            },
+            "m2.2xlarge": {
+                "Arch": "PV64"
+            },
+            "m2.4xlarge": {
+                "Arch": "PV64"
+            },
+            "m2.xlarge": {
+                "Arch": "PV64"
+            },
+            "m3.2xlarge": {
+                "Arch": "HVM64"
+            },
+            "m3.large": {
+                "Arch": "HVM64"
+            },
+            "m3.medium": {
+                "Arch": "HVM64"
+            },
+            "m3.xlarge": {
+                "Arch": "HVM64"
+            },
+            "m4.10xlarge": {
+                "Arch": "HVM64"
+            },
+            "m4.2xlarge": {
+                "Arch": "HVM64"
+            },
+            "m4.4xlarge": {
+                "Arch": "HVM64"
+            },
+            "m4.large": {
+                "Arch": "HVM64"
+            },
+            "m4.xlarge": {
+                "Arch": "HVM64"
+            },
+            "r3.2xlarge": {
+                "Arch": "HVM64"
+            },
+            "r3.4xlarge": {
+                "Arch": "HVM64"
+            },
+            "r3.8xlarge": {
+                "Arch": "HVM64"
+            },
+            "r3.large": {
+                "Arch": "HVM64"
+            },
+            "r3.xlarge": {
+                "Arch": "HVM64"
+            },
+            "t1.micro": {
+                "Arch": "PV64"
+            },
+            "t2.large": {
+                "Arch": "HVM64"
+            },
+            "t2.medium": {
+                "Arch": "HVM64"
+            },
+            "t2.micro": {
+                "Arch": "HVM64"
+            },
+            "t2.nano": {
+                "Arch": "HVM64"
+            },
+            "t2.small": {
+                "Arch": "HVM64"
+            }
+        },
+        "AWSRegionArch2AMI": {
+            "ap-northeast-1": {
+                "HVM64": "ami-374db956",
+                "HVMG2": "ami-e0ee1981",
+                "PV64": "ami-3e42b65f"
+            },
+            "ap-northeast-2": {
+                "HVM64": "ami-2b408b45",
+                "HVMG2": "NOT_SUPPORTED",
+                "PV64": "NOT_SUPPORTED"
+            },
+            "ap-south-1": {
+                "HVM64": "ami-ffbdd790",
+                "HVMG2": "ami-f5b2d89a",
+                "PV64": "NOT_SUPPORTED"
+            },
+            "ap-southeast-1": {
+                "HVM64": "ami-a59b49c6",
+                "HVMG2": "ami-0cb5676f",
+                "PV64": "ami-df9e4cbc"
+            },
+            "ap-southeast-2": {
+                "HVM64": "ami-dc361ebf",
+                "HVMG2": "ami-a71c34c4",
+                "PV64": "ami-63351d00"
+            },
+            "cn-north-1": {
+                "HVM64": "ami-8e6aa0e3",
+                "HVMG2": "NOT_SUPPORTED",
+                "PV64": "ami-77559f1a"
+            },
+            "eu-central-1": {
+                "HVM64": "ami-ea26ce85",
+                "HVMG2": "ami-7f04ec10",
+                "PV64": "ami-6527cf0a"
+            },
+            "eu-west-1": {
+                "HVM64": "ami-f9dd458a",
+                "HVMG2": "ami-b9bd25ca",
+                "PV64": "ami-4cdd453f"
+            },
+            "sa-east-1": {
+                "HVM64": "ami-6dd04501",
+                "HVMG2": "NOT_SUPPORTED",
+                "PV64": "ami-1ad34676"
+            },
+            "us-east-1": {
+                "HVM64": "ami-6869aa05",
+                "HVMG2": "ami-2e5e9c43",
+                "PV64": "ami-2a69aa47"
+            },
+            "us-west-1": {
+                "HVM64": "ami-31490d51",
+                "HVMG2": "ami-fd76329d",
+                "PV64": "ami-a2490dc2"
+            },
+            "us-west-2": {
+                "HVM64": "ami-7172b611",
+                "HVMG2": "ami-83b770e3",
+                "PV64": "ami-7f77b31f"
+            }
+        },
+        "Region2ARNPrefix": {
+            "ap-northeast-1": {
+                "ARNPrefix": "arn:aws:"
+            },
+            "ap-northeast-2": {
+                "ARNPrefix": "arn:aws:"
+            },
+            "ap-south-1": {
+                "ARNPrefix": "arn:aws:"
+            },
+            "ap-southeast-1": {
+                "ARNPrefix": "arn:aws:"
+            },
+            "ap-southeast-2": {
+                "ARNPrefix": "arn:aws:"
+            },
+            "cn-north-1": {
+                "ARNPrefix": "arn:aws-cn:"
+            },
+            "eu-central-1": {
+                "ARNPrefix": "arn:aws:"
+            },
+            "eu-west-1": {
+                "ARNPrefix": "arn:aws:"
+            },
+            "sa-east-1": {
+                "ARNPrefix": "arn:aws:"
+            },
+            "us-east-1": {
+                "ARNPrefix": "arn:aws:"
+            },
+            "us-west-1": {
+                "ARNPrefix": "arn:aws:"
+            },
+            "us-west-2": {
+                "ARNPrefix": "arn:aws:"
+            }
+        },
+        "Region2Principal": {
+            "ap-northeast-1": {
+                "EC2Principal": "ec2.amazonaws.com",
+                "OpsWorksPrincipal": "opsworks.amazonaws.com"
+            },
+            "ap-northeast-2": {
+                "EC2Principal": "ec2.amazonaws.com",
+                "OpsWorksPrincipal": "opsworks.amazonaws.com"
+            },
+            "ap-south-1": {
+                "EC2Principal": "ec2.amazonaws.com",
+                "OpsWorksPrincipal": "opsworks.amazonaws.com"
+            },
+            "ap-southeast-1": {
+                "EC2Principal": "ec2.amazonaws.com",
+                "OpsWorksPrincipal": "opsworks.amazonaws.com"
+            },
+            "ap-southeast-2": {
+                "EC2Principal": "ec2.amazonaws.com",
+                "OpsWorksPrincipal": "opsworks.amazonaws.com"
+            },
+            "cn-north-1": {
+                "EC2Principal": "ec2.amazonaws.com.cn",
+                "OpsWorksPrincipal": "opsworks.amazonaws.com.cn"
+            },
+            "eu-central-1": {
+                "EC2Principal": "ec2.amazonaws.com",
+                "OpsWorksPrincipal": "opsworks.amazonaws.com"
+            },
+            "eu-west-1": {
+                "EC2Principal": "ec2.amazonaws.com",
+                "OpsWorksPrincipal": "opsworks.amazonaws.com"
+            },
+            "sa-east-1": {
+                "EC2Principal": "ec2.amazonaws.com",
+                "OpsWorksPrincipal": "opsworks.amazonaws.com"
+            },
+            "us-east-1": {
+                "EC2Principal": "ec2.amazonaws.com",
+                "OpsWorksPrincipal": "opsworks.amazonaws.com"
+            },
+            "us-west-1": {
+                "EC2Principal": "ec2.amazonaws.com",
+                "OpsWorksPrincipal": "opsworks.amazonaws.com"
+            },
+            "us-west-2": {
+                "EC2Principal": "ec2.amazonaws.com",
+                "OpsWorksPrincipal": "opsworks.amazonaws.com"
+            }
+        }
+    },
+    "Outputs": {
+        "PublicIp": {
+            "Description": "Public IP of the newly created EC2 instance",
+            "Value": {
+                "Fn::GetAtt": [
+                    "Ec2Instance",
+                    "PublicIp"
+                ]
+            }
+        }
+    },
+    "Parameters": {
+        "InstanceType": {
+            "AllowedValues": [
+                "t1.micro",
+                "t2.nano",
+                "t2.micro",
+                "t2.small",
+                "t2.medium",
+                "t2.large",
+                "m1.small",
+                "m1.medium",
+                "m1.large",
+                "m1.xlarge",
+                "m2.xlarge",
+                "m2.2xlarge",
+                "m2.4xlarge",
+                "m3.medium",
+                "m3.large",
+                "m3.xlarge",
+                "m3.2xlarge",
+                "m4.large",
+                "m4.xlarge",
+                "m4.2xlarge",
+                "m4.4xlarge",
+                "m4.10xlarge",
+                "c1.medium",
+                "c1.xlarge",
+                "c3.large",
+                "c3.xlarge",
+                "c3.2xlarge",
+                "c3.4xlarge",
+                "c3.8xlarge",
+                "c4.large",
+                "c4.xlarge",
+                "c4.2xlarge",
+                "c4.4xlarge",
+                "c4.8xlarge",
+                "g2.2xlarge",
+                "g2.8xlarge",
+                "r3.large",
+                "r3.xlarge",
+                "r3.2xlarge",
+                "r3.4xlarge",
+                "r3.8xlarge",
+                "i2.xlarge",
+                "i2.2xlarge",
+                "i2.4xlarge",
+                "i2.8xlarge",
+                "d2.xlarge",
+                "d2.2xlarge",
+                "d2.4xlarge",
+                "d2.8xlarge",
+                "hi1.4xlarge",
+                "hs1.8xlarge",
+                "cr1.8xlarge",
+                "cc2.8xlarge",
+                "cg1.4xlarge"
+            ],
+            "ConstraintDescription": "must be a valid EC2 instance type.",
+            "Default": "t2.micro",
+            "Description": "EC2 Instance Size",
+            "Type": "String"
+        },
+        "KeyName": {
+            "ConstraintDescription": "must be the name of an existing EC2 KeyPair.",
+            "Description": "Name of an existing EC2 KeyPair to enable SSH access to the instance",
+            "Type": "AWS::EC2::KeyPair::KeyName"
+        },
+        "SSHLocation": {
+            "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
+            "ConstraintDescription": "must be a valid IP CIDR range of the form x.x.x.x/x.",
+            "Default": "0.0.0.0/0",
+            "Description": " The IP address range that can be used to SSH to the EC2 instances",
+            "MaxLength": "18",
+            "MinLength": "9",
+            "Type": "String"
+        }
+    },
+    "Resources": {
+        "Ec2Instance": {
+            "Metadata": {
+                "AWS::CloudFormation::Init": {
+                    "config1": {
+                        "commands": {
+                            "test": {
+                                "command": "echo \"$CFNTEST\" > text.txt",
+                                "cwd": "~",
+                                "env": {
+                                    "CFNTEST": "I come from config1."
+                                }
+                            }
+                        }
+                    },
+                    "config2": {
+                        "commands": {
+                            "test": {
+                                "command": "echo \"$CFNTEST\" > text.txt",
+                                "cwd": "~",
+                                "env": {
+                                    "CFNTEST": "I come from config2."
+                                }
+                            }
+                        }
+                    },
+                    "configSets": {
+                        "ascending": [
+                            "config1",
+                            "config2"
+                        ],
+                        "descending": [
+                            "config2",
+                            "config1"
+                        ]
+                    }
+                }
+            },
+            "Properties": {
+                "IamInstanceProfile": "PullCredentials",
+                "ImageId": {
+                    "Fn::FindInMap": [
+                        "AWSRegionArch2AMI",
+                        {
+                            "Ref": "AWS::Region"
+                        },
+                        {
+                            "Fn::FindInMap": [
+                                "AWSInstanceType2Arch",
+                                {
+                                    "Ref": "InstanceType"
+                                },
+                                "Arch"
+                            ]
+                        }
+                    ]
+                },
+                "InstanceType": {
+                    "Ref": "InstanceType"
+                },
+                "KeyName": {
+                    "Ref": "KeyName"
+                },
+                "SecurityGroups": [
+                    {
+                        "Ref": "SecurityGroup"
+                    }
+                ],
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "ops.cfninit"
+                    },
+                    {
+                        "Key": "env",
+                        "Value": "ops"
+                    }
+                ],
+                "UserData": {
+                    "Fn::Base64": {
+                        "Fn::Join": [
+                            "",
+                            [
+                                "#!/bin/bash\n",
+                                "sudo apt-get update\n",
+                                "sudo apt-get -y install python-setuptools\n",
+                                "sudo apt-get -y install python-pip\n",
+                                "sudo pip install https://s3.amazonaws.com/cloudformation-examples/",
+                                "aws-cfn-bootstrap-latest.tar.gz\n",
+                                "cfn-init -s '",
+                                {
+                                    "Ref": "AWS::StackName"
+                                },
+                                "' -r Ec2Instance -c ascending"
+                            ]
+                        ]
+                    }
+                }
+            },
+            "Type": "AWS::EC2::Instance"
+        },
+        "SecurityGroup": {
+            "Properties": {
+                "GroupDescription": "Allows SSH access from anywhere",
+                "SecurityGroupIngress": [
+                    {
+                        "CidrIp": {
+                            "Ref": "SSHLocation"
+                        },
+                        "FromPort": 22,
+                        "IpProtocol": "tcp",
+                        "ToPort": 22
+                    }
+                ],
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "ChefNodeSecurityGroup"
+                    }
+                ]
+            },
+            "Type": "AWS::EC2::SecurityGroup"
+        }
+    }
+}

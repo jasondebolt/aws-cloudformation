@@ -1,0 +1,58 @@
+{
+  "AWSTemplateFormatVersion" : "2010-09-09",
+  "Description": "Weatherstation DynamoDB project.",
+  "Parameters": {
+    "VpcURL": {
+      "Type": "String",
+      "Default" : "https://s3-us-west-2.amazonaws.com/jasondebolt-cloud-formation/vpc/vpc.template",
+      "Description": "Template URL for VPC Network."
+    },
+    "Ec2InstanceURL": {
+      "Type": "String",
+      "Default" : "https://s3-us-west-2.amazonaws.com/jasondebolt-cloud-formation/projects/weatherstation/ec2_instance.json",
+      "Description": "Template URL for our EC2 instance."
+    },
+    "WeatherStationDataTableURL": {
+      "Type": "String",
+      "Default" : "https://s3-us-west-2.amazonaws.com/jasondebolt-cloud-formation/projects/weatherstation/weatherstation_data_table.json",
+      "Description": "Template URL for our weatherstation_data DynamoDB table."
+    },
+    "AdminUserURL": {
+      "Type": "String",
+      "Default" : "https://s3-us-west-2.amazonaws.com/jasondebolt-cloud-formation/projects/weatherstation/admin_user.json",
+      "Description": "Template URL for our admin user whose credentials we will use."
+    }
+  },
+  "Resources" : {
+    "Vpc" : {
+       "Type" : "AWS::CloudFormation::Stack",
+     	 "Properties" : {
+         "TemplateURL" : { "Ref": "VpcURL" },
+         "Parameters" : { "CIDRRange": "10.1.0.0" }
+       }
+    },
+    "Ec2Instance" : {
+       "Type" : "AWS::CloudFormation::Stack",
+       "DependsOn" : "Vpc",
+       "Properties" : {
+         "TemplateURL" : { "Ref": "Ec2InstanceURL" },
+         "Parameters" : {
+           "VPCID"               : {"Fn::GetAtt": ["Vpc", "Outputs.VPCID"]},
+           "PublicSubnetId"       : {"Fn::GetAtt": ["Vpc", "Outputs.SubnetPublicAZ1"]}
+         }
+       }
+     },
+     "WeatherStationDataTable" : {
+       "Type" : "AWS::CloudFormation::Stack",
+       "Properties" : {
+         "TemplateURL" : { "Ref": "WeatherStationDataTableURL" }
+       }
+     },
+     "AdminUser" : {
+       "Type" : "AWS::CloudFormation::Stack",
+       "Properties" : {
+         "TemplateURL" : { "Ref": "AdminUserURL" }
+       }
+     }
+   }
+}

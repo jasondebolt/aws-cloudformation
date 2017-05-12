@@ -1,0 +1,51 @@
+{
+  "AWSTemplateFormatVersion" : "2010-09-09",
+
+  "Description": "Creates an ECR Repository named the same as the stack name (must-be-lower-case-with-dashes)",
+
+  "Resources" : {
+    "MyRepository":{
+      "Type":"AWS::ECR::Repository",
+      "Properties":{
+        "RepositoryName":{
+          "Ref":"AWS::StackName"
+        },
+        "RepositoryPolicyText": {
+          "Version": "2008-10-17",
+          "Statement": [
+            {
+              "Sid": "AllowPushPull",
+              "Effect": "Allow",
+              "Principal": {
+                "AWS":[
+                  { "Fn::Join": [ "", [ "arn:aws:iam::", { "Ref":"AWS::AccountId" }, ":user/", "jasondebolt" ] ] },
+                  { "Fn::Join": [ "", [ "arn:aws:iam::", { "Ref":"AWS::AccountId" }, ":user/", "deboflo_test" ] ] },
+                ]
+              },
+              "Action": [
+                "ecr:GetDownloadUrlForLayer",
+                "ecr:BatchGetImage",
+                "ecr:BatchCheckLayerAvailability",
+                "ecr:PutImage",
+                "ecr:InitiateLayerUpload",
+                "ecr:UploadLayerPart",
+                "ecr:CompleteLayerUpload"
+              ]
+            }
+          ]
+        }
+      }
+    }
+  },
+
+  "Outputs": {
+    "ECSRepository": {
+      "Value": {
+        "Ref": "MyRepository"
+      }
+    }
+  }
+  
+}
+
+

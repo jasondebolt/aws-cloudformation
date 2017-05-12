@@ -1,0 +1,39 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Parameters": {
+    "DomainName": {
+      "Type": "String"
+    },
+    "HostedZoneID" : {
+      "Type" : "String",
+      "Description" : "S3 Website Enpoint ()"
+    },
+    "S3BucketWebsiteEndpoint" : {
+      "Type" : "String",
+      "Description" : "See 'Amazon Simple Storage Service Website Endpoints' section of http://docs.aws.amazon.com/general/latest/gr/rande.html"
+    },
+    "S3BucketHostedZoneID" : {
+      "Type" : "String",
+      "Description" : "See 'Amazon Simple Storage Service Website Endpoints' section of http://docs.aws.amazon.com/general/latest/gr/rande.html"
+    }
+  },
+  "Resources" : {
+    "DNSRecord" : {
+      "Type" : "AWS::Route53::RecordSet",
+      "Properties" : {
+        "AliasTarget": {
+          "DNSName" : { "Ref" : "S3BucketWebsiteEndpoint" },
+          "HostedZoneId" : { "Ref" : "S3BucketHostedZoneID" }
+        },
+        "HostedZoneId" : { "Ref" : "HostedZoneID" },
+        "Comment" : "Creates an A record set for a static S3 bucket website.",
+        "Name" : {
+          "Fn::Join" : [ "", [
+            {"Ref" : "DomainName"} ,"."
+          ] ]
+        },
+        "Type" : "A"
+      }
+    }
+  }
+}

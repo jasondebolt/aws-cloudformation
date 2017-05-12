@@ -1,0 +1,27 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Parameters": {
+    "DomainName": {
+      "Type": "String"
+    }
+  },
+  "Resources" : {
+    "PublicHostedZone": {
+      "Type": "AWS::Route53::HostedZone",
+      "Properties": {
+        "Name": { "Ref" : "DomainName" },
+        "HostedZoneTags" : [{
+          "Key": "SampleKey1",
+          "Value": "SampleValue1"
+        },
+        {
+          "Key": "SampleKey2",
+          "Value": "SampleValue2"
+        }]
+      }
+    }
+  },
+  "Outputs": {
+    "HostedZoneID" : { "Value" : { "Ref" : "PublicHostedZone" } }
+  }
+}

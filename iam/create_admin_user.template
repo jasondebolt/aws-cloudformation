@@ -1,0 +1,54 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+
+  "Description": "Creates an AWS Admin user with full admin privileges.",
+
+  "Parameters": {
+    "AdminUsername": {
+      "Description": "The username of the admin user, must be lower case, underscore is allowed.",
+      "ConstraintDescription": "Must be lower case, underscore is allowed",
+      "AllowedPattern": "[a-z_]+",
+      "Type": "String"
+    }
+  },
+
+  "Resources" : {
+    "Admin" : {
+      "Type": "AWS::IAM::User",
+      "Properties" : {
+        "UserName" : {"Ref" : "AdminUsername"},
+        "Policies" : [
+          {
+            "PolicyName" : "full-admin",
+            "PolicyDocument" : {
+              "Version" : "2012-10-17",
+              "Statement" : [
+                {
+                  "Effect" : "Allow",
+                  "Action" : "*",
+                  "Resource" : "*"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "AdminKeys" : {
+      "Type": "AWS::IAM::AccessKey",
+      "Properties" : {
+        "UserName" : {"Ref" : "Admin"}
+      }
+    }
+  },
+  "Outputs" : {
+    "AdminAccessKeyID" : {
+      "Description" : "Admin User - Access Key ID",
+      "Value" : {"Ref" : "AdminKeys"}
+    },
+    "AdminSecretAccessKey" : {
+      "Description" : "Admin User - Secret Access Key",
+      "Value" : {"Fn::GetAtt" : ["AdminKeys", "SecretAccessKey"]}
+    }
+  }
+}
