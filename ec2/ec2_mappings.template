@@ -1,0 +1,318 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "Create common mappings for EC2 relatedAWS CloudFormation resources",
+    "Mappings": {
+        "AWSInstanceType2Arch": {
+            "c1.medium": {
+                "Arch": "PV64"
+            },
+            "c1.xlarge": {
+                "Arch": "PV64"
+            },
+            "c3.2xlarge": {
+                "Arch": "HVM64"
+            },
+            "c3.4xlarge": {
+                "Arch": "HVM64"
+            },
+            "c3.8xlarge": {
+                "Arch": "HVM64"
+            },
+            "c3.large": {
+                "Arch": "HVM64"
+            },
+            "c3.xlarge": {
+                "Arch": "HVM64"
+            },
+            "c4.2xlarge": {
+                "Arch": "HVM64"
+            },
+            "c4.4xlarge": {
+                "Arch": "HVM64"
+            },
+            "c4.8xlarge": {
+                "Arch": "HVM64"
+            },
+            "c4.large": {
+                "Arch": "HVM64"
+            },
+            "c4.xlarge": {
+                "Arch": "HVM64"
+            },
+            "cc2.8xlarge": {
+                "Arch": "HVM64"
+            },
+            "cr1.8xlarge": {
+                "Arch": "HVM64"
+            },
+            "d2.2xlarge": {
+                "Arch": "HVM64"
+            },
+            "d2.4xlarge": {
+                "Arch": "HVM64"
+            },
+            "d2.8xlarge": {
+                "Arch": "HVM64"
+            },
+            "d2.xlarge": {
+                "Arch": "HVM64"
+            },
+            "g2.2xlarge": {
+                "Arch": "HVMG2"
+            },
+            "g2.8xlarge": {
+                "Arch": "HVMG2"
+            },
+            "hi1.4xlarge": {
+                "Arch": "HVM64"
+            },
+            "hs1.8xlarge": {
+                "Arch": "HVM64"
+            },
+            "i2.2xlarge": {
+                "Arch": "HVM64"
+            },
+            "i2.4xlarge": {
+                "Arch": "HVM64"
+            },
+            "i2.8xlarge": {
+                "Arch": "HVM64"
+            },
+            "i2.xlarge": {
+                "Arch": "HVM64"
+            },
+            "m1.large": {
+                "Arch": "PV64"
+            },
+            "m1.medium": {
+                "Arch": "PV64"
+            },
+            "m1.small": {
+                "Arch": "PV64"
+            },
+            "m1.xlarge": {
+                "Arch": "PV64"
+            },
+            "m2.2xlarge": {
+                "Arch": "PV64"
+            },
+            "m2.4xlarge": {
+                "Arch": "PV64"
+            },
+            "m2.xlarge": {
+                "Arch": "PV64"
+            },
+            "m3.2xlarge": {
+                "Arch": "HVM64"
+            },
+            "m3.large": {
+                "Arch": "HVM64"
+            },
+            "m3.medium": {
+                "Arch": "HVM64"
+            },
+            "m3.xlarge": {
+                "Arch": "HVM64"
+            },
+            "m4.10xlarge": {
+                "Arch": "HVM64"
+            },
+            "m4.2xlarge": {
+                "Arch": "HVM64"
+            },
+            "m4.4xlarge": {
+                "Arch": "HVM64"
+            },
+            "m4.large": {
+                "Arch": "HVM64"
+            },
+            "m4.xlarge": {
+                "Arch": "HVM64"
+            },
+            "r3.2xlarge": {
+                "Arch": "HVM64"
+            },
+            "r3.4xlarge": {
+                "Arch": "HVM64"
+            },
+            "r3.8xlarge": {
+                "Arch": "HVM64"
+            },
+            "r3.large": {
+                "Arch": "HVM64"
+            },
+            "r3.xlarge": {
+                "Arch": "HVM64"
+            },
+            "t1.micro": {
+                "Arch": "PV64"
+            },
+            "t2.large": {
+                "Arch": "HVM64"
+            },
+            "t2.medium": {
+                "Arch": "HVM64"
+            },
+            "t2.micro": {
+                "Arch": "HVM64"
+            },
+            "t2.nano": {
+                "Arch": "HVM64"
+            },
+            "t2.small": {
+                "Arch": "HVM64"
+            }
+        },
+        "AWSRegionArch2AMI": {
+            "ap-northeast-1": {
+                "HVM64": "ami-374db956",
+                "HVMG2": "ami-e0ee1981",
+                "PV64": "ami-3e42b65f"
+            },
+            "ap-northeast-2": {
+                "HVM64": "ami-2b408b45",
+                "HVMG2": "NOT_SUPPORTED",
+                "PV64": "NOT_SUPPORTED"
+            },
+            "ap-south-1": {
+                "HVM64": "ami-ffbdd790",
+                "HVMG2": "ami-f5b2d89a",
+                "PV64": "NOT_SUPPORTED"
+            },
+            "ap-southeast-1": {
+                "HVM64": "ami-a59b49c6",
+                "HVMG2": "ami-0cb5676f",
+                "PV64": "ami-df9e4cbc"
+            },
+            "ap-southeast-2": {
+                "HVM64": "ami-dc361ebf",
+                "HVMG2": "ami-a71c34c4",
+                "PV64": "ami-63351d00"
+            },
+            "cn-north-1": {
+                "HVM64": "ami-8e6aa0e3",
+                "HVMG2": "NOT_SUPPORTED",
+                "PV64": "ami-77559f1a"
+            },
+            "eu-central-1": {
+                "HVM64": "ami-ea26ce85",
+                "HVMG2": "ami-7f04ec10",
+                "PV64": "ami-6527cf0a"
+            },
+            "eu-west-1": {
+                "HVM64": "ami-f9dd458a",
+                "HVMG2": "ami-b9bd25ca",
+                "PV64": "ami-4cdd453f"
+            },
+            "sa-east-1": {
+                "HVM64": "ami-6dd04501",
+                "HVMG2": "NOT_SUPPORTED",
+                "PV64": "ami-1ad34676"
+            },
+            "us-east-1": {
+                "HVM64": "ami-6869aa05",
+                "HVMG2": "ami-2e5e9c43",
+                "PV64": "ami-2a69aa47"
+            },
+            "us-west-1": {
+                "HVM64": "ami-31490d51",
+                "HVMG2": "ami-fd76329d",
+                "PV64": "ami-a2490dc2"
+            },
+            "us-west-2": {
+                "HVM64": "ami-7172b611",
+                "HVMG2": "ami-83b770e3",
+                "PV64": "ami-7f77b31f"
+            }
+        },
+        "Region2ARNPrefix": {
+            "ap-northeast-1": {
+                "ARNPrefix": "arn:aws:"
+            },
+            "ap-northeast-2": {
+                "ARNPrefix": "arn:aws:"
+            },
+            "ap-south-1": {
+                "ARNPrefix": "arn:aws:"
+            },
+            "ap-southeast-1": {
+                "ARNPrefix": "arn:aws:"
+            },
+            "ap-southeast-2": {
+                "ARNPrefix": "arn:aws:"
+            },
+            "cn-north-1": {
+                "ARNPrefix": "arn:aws-cn:"
+            },
+            "eu-central-1": {
+                "ARNPrefix": "arn:aws:"
+            },
+            "eu-west-1": {
+                "ARNPrefix": "arn:aws:"
+            },
+            "sa-east-1": {
+                "ARNPrefix": "arn:aws:"
+            },
+            "us-east-1": {
+                "ARNPrefix": "arn:aws:"
+            },
+            "us-west-1": {
+                "ARNPrefix": "arn:aws:"
+            },
+            "us-west-2": {
+                "ARNPrefix": "arn:aws:"
+            }
+        },
+        "Region2Principal": {
+            "ap-northeast-1": {
+                "EC2Principal": "ec2.amazonaws.com",
+                "OpsWorksPrincipal": "opsworks.amazonaws.com"
+            },
+            "ap-northeast-2": {
+                "EC2Principal": "ec2.amazonaws.com",
+                "OpsWorksPrincipal": "opsworks.amazonaws.com"
+            },
+            "ap-south-1": {
+                "EC2Principal": "ec2.amazonaws.com",
+                "OpsWorksPrincipal": "opsworks.amazonaws.com"
+            },
+            "ap-southeast-1": {
+                "EC2Principal": "ec2.amazonaws.com",
+                "OpsWorksPrincipal": "opsworks.amazonaws.com"
+            },
+            "ap-southeast-2": {
+                "EC2Principal": "ec2.amazonaws.com",
+                "OpsWorksPrincipal": "opsworks.amazonaws.com"
+            },
+            "cn-north-1": {
+                "EC2Principal": "ec2.amazonaws.com.cn",
+                "OpsWorksPrincipal": "opsworks.amazonaws.com.cn"
+            },
+            "eu-central-1": {
+                "EC2Principal": "ec2.amazonaws.com",
+                "OpsWorksPrincipal": "opsworks.amazonaws.com"
+            },
+            "eu-west-1": {
+                "EC2Principal": "ec2.amazonaws.com",
+                "OpsWorksPrincipal": "opsworks.amazonaws.com"
+            },
+            "sa-east-1": {
+                "EC2Principal": "ec2.amazonaws.com",
+                "OpsWorksPrincipal": "opsworks.amazonaws.com"
+            },
+            "us-east-1": {
+                "EC2Principal": "ec2.amazonaws.com",
+                "OpsWorksPrincipal": "opsworks.amazonaws.com"
+            },
+            "us-west-1": {
+                "EC2Principal": "ec2.amazonaws.com",
+                "OpsWorksPrincipal": "opsworks.amazonaws.com"
+            },
+            "us-west-2": {
+                "EC2Principal": "ec2.amazonaws.com",
+                "OpsWorksPrincipal": "opsworks.amazonaws.com"
+            }
+        }
+    },
+    "Resources": {}
+}

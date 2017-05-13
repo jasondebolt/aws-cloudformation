@@ -1,7 +1,13 @@
 {
     "AWSTemplateFormatVersion": "2010-09-09",
-    "Description": "Create an EC2 instance which automatically bootstraps a Chef node using Chef unattended installs.",
+    "Description": "Create an IAM Role, IAM Policy, and EC2 Instance Profile, and a CloudFormation log group for EC2 Instances.",
     "Resources": {
+        "CloudFormationLogs": {
+            "Properties": {
+                "RetentionInDays": 7
+            },
+            "Type": "AWS::Logs::LogGroup"
+        },
         "EC2Role": {
             "Properties": {
                 "AssumeRolePolicyDocument": {
