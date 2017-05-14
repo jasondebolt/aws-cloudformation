@@ -8,6 +8,7 @@ import ec2_resources # pylint: disable=W0403
 
 EC2_INSTANCE_NAME = 'ChefNodeInstance'
 
+
 class ChefNodeEC2Instance(object):
     """Generates the appropriate Cloudformation resources to produce
     an EC2 instance with an automatically bootstrapped Chef node.
@@ -150,8 +151,8 @@ class ChefNodeEC2Instance(object):
                                     '[/var/log/cloud-init.log]\n',
                                     'file = /var/log/cloud-init.log\n',
                                     Join('', ['log_group_name = ',
-                                              Ref(self.template.parameters[
-                                                  'LogGroupName'])]),
+                                              Ref(self.template.resources[
+                                                  'LogGroupResource']), '\n']),
                                     'log_stream_name = ',
                                     '{instance_id}/cloud-init.log\n',
                                     'datetime_format = \n',
@@ -159,8 +160,8 @@ class ChefNodeEC2Instance(object):
                                     '[/var/log/cloud-init-output.log]\n',
                                     'file = /var/log/cloud-init-output.log\n',
                                     Join('', ['log_group_name = ',
-                                              Ref(self.template.parameters[
-                                                  'LogGroupName'])]),
+                                              Ref(self.template.resources[
+                                                  'LogGroupResource']), '\n']),
                                     'log_stream_name = ',
                                     '{instance_id}/cloud-init-output.log\n',
                                     'datetime_format = \n',
@@ -168,8 +169,8 @@ class ChefNodeEC2Instance(object):
                                     '[/var/log/cfn-init.log]\n',
                                     'file = /var/log/cfn-init.log\n',
                                     Join('', ['log_group_name = ',
-                                              Ref(self.template.parameters[
-                                                  'LogGroupName'])]),
+                                              Ref(self.template.resources[
+                                                  'LogGroupResource']), '\n']),
                                     'log_stream_name = ',
                                     '{instance_id}/cfn-init.log\n',
                                     'datetime_format = \n',
@@ -177,8 +178,8 @@ class ChefNodeEC2Instance(object):
                                     '[/var/log/cfn-hup.log]\n',
                                     'file = /var/log/cfn-hup.log\n',
                                     Join('', ['log_group_name = ',
-                                              Ref(self.template.parameters[
-                                                  'LogGroupName'])]),
+                                              Ref(self.template.resources[
+                                                  'LogGroupResource']), '\n']),
                                     'log_stream_name = ',
                                     '{instance_id}/cfn-hup.log\n',
                                     'datetime_format = \n',
@@ -186,8 +187,8 @@ class ChefNodeEC2Instance(object):
                                     '[/var/log/cfn-wire.log]\n',
                                     'file = /var/log/cfn-wire.log\n',
                                     Join('', ['log_group_name = ',
-                                              Ref(self.template.parameters[
-                                                  'LogGroupName'])]),
+                                              Ref(self.template.resources[
+                                                  'LogGroupResource']), '\n']),
                                     'log_stream_name = ',
                                     '{instance_id}/cfn-wire.log\n',
                                     'datetime_format = \n',
@@ -195,8 +196,8 @@ class ChefNodeEC2Instance(object):
                                     '[/var/log/httpd]\n',
                                     'file = /var/log/httpd/*\n',
                                     Join('', ['log_group_name = ',
-                                              Ref(self.template.parameters[
-                                                  'LogGroupName'])]),
+                                              Ref(self.template.resources[
+                                                  'LogGroupResource']), '\n']),
                                     'log_stream_name = ',
                                     '{instance_id}/httpd\n',
                                     'datetime_format = %d/%b/%Y:%H:%M:%S\n'

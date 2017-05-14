@@ -314,6 +314,14 @@
             }
         }
     },
+    "Outputs": {
+        "LogGroupName": {
+            "Description": "LogGroupName (Physical ID)",
+            "Value": {
+                "Ref": "LogGroupResource"
+            }
+        }
+    },
     "Parameters": {
         "InstanceProfileName": {
             "AllowedPattern": "^[a-zA-Z0-9]*$",
@@ -407,6 +415,25 @@
             "Type": "String"
         },
         "LogRetentionDays": {
+            "AllowedValues": [
+                "1",
+                "3",
+                "5",
+                "7",
+                "14",
+                "30",
+                "60",
+                "90",
+                "120",
+                "150",
+                "180",
+                "365",
+                "400",
+                "545",
+                "731",
+                "1827",
+                "3653"
+            ],
             "Default": "7",
             "Description": "The number of days you would like to retain the logs associated with this instance in cloudwatch.",
             "Type": "Number"
@@ -435,7 +462,7 @@
                 "Path": "/",
                 "Roles": [
                     {
-                        "Ref": "RoleName"
+                        "Ref": "RoleResource"
                     }
                 ]
             },
@@ -473,7 +500,7 @@
                 },
                 "Roles": [
                     {
-                        "Ref": "RoleName"
+                        "Ref": "RoleResource"
                     }
                 ]
             },

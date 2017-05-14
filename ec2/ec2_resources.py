@@ -4,6 +4,7 @@ Create an IAM Role, IAM Policy, and EC2 Instance Profile for EC2 Instances.
 """
 from troposphere import Ref, Template
 from troposphere.logs import LogGroup
+from troposphere import Output
 import troposphere.iam as iam
 import ec2_parameters # pylint: disable=W0403
 
@@ -66,8 +67,14 @@ class EC2Resources(object):
 
         self.template.add_resource(LogGroup(
             'LogGroupResource',
-            LogGroupName=Ref(self.template.parameters['LogGroupName']),
-            RetentionInDays=Ref(self.template.parameters['LogRetentionDays'])
+            RetentionInDays=Ref(self.template.parameters['LogRetentionDays']),
+            DeletionPolicy='Delete'
+        ))
+
+        self.template.add_output(Output(
+            "LogGroupName",
+            Description="LogGroupName (Physical ID)",
+            Value=Ref(self.template.resources['LogGroupResource'])
         ))
 
         return self.template

@@ -315,6 +315,12 @@
         }
     },
     "Outputs": {
+        "LogGroupName": {
+            "Description": "LogGroupName (Physical ID)",
+            "Value": {
+                "Ref": "LogGroupResource"
+            }
+        },
         "PublicIp": {
             "Description": "Public IP of the newly created EC2 instance",
             "Value": {
@@ -605,8 +611,9 @@
                                                     [
                                                         "log_group_name = ",
                                                         {
-                                                            "Ref": "LogGroupName"
-                                                        }
+                                                            "Ref": "LogGroupResource"
+                                                        },
+                                                        "\n"
                                                     ]
                                                 ]
                                             },
@@ -621,8 +628,9 @@
                                                     [
                                                         "log_group_name = ",
                                                         {
-                                                            "Ref": "LogGroupName"
-                                                        }
+                                                            "Ref": "LogGroupResource"
+                                                        },
+                                                        "\n"
                                                     ]
                                                 ]
                                             },
@@ -637,8 +645,9 @@
                                                     [
                                                         "log_group_name = ",
                                                         {
-                                                            "Ref": "LogGroupName"
-                                                        }
+                                                            "Ref": "LogGroupResource"
+                                                        },
+                                                        "\n"
                                                     ]
                                                 ]
                                             },
@@ -653,8 +662,9 @@
                                                     [
                                                         "log_group_name = ",
                                                         {
-                                                            "Ref": "LogGroupName"
-                                                        }
+                                                            "Ref": "LogGroupResource"
+                                                        },
+                                                        "\n"
                                                     ]
                                                 ]
                                             },
@@ -669,8 +679,9 @@
                                                     [
                                                         "log_group_name = ",
                                                         {
-                                                            "Ref": "LogGroupName"
-                                                        }
+                                                            "Ref": "LogGroupResource"
+                                                        },
+                                                        "\n"
                                                     ]
                                                 ]
                                             },
@@ -685,8 +696,9 @@
                                                     [
                                                         "log_group_name = ",
                                                         {
-                                                            "Ref": "LogGroupName"
-                                                        }
+                                                            "Ref": "LogGroupResource"
+                                                        },
+                                                        "\n"
                                                     ]
                                                 ]
                                             },
@@ -819,10 +831,8 @@
             "Type": "AWS::IAM::InstanceProfile"
         },
         "LogGroupResource": {
+            "DeletionPolicy": "Retain",
             "Properties": {
-                "LogGroupName": {
-                    "Ref": "LogGroupName"
-                },
                 "RetentionInDays": {
                     "Ref": "LogRetentionDays"
                 }
