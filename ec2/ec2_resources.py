@@ -5,35 +5,20 @@ Create an IAM Role, IAM Policy, and EC2 Instance Profile for EC2 Instances.
 from troposphere import Ref, Template
 from troposphere.logs import LogGroup
 import troposphere.iam as iam
-
-EC2_ROLE_NAME = 'Ec2Role'
-EC2_INSTANCE_PROFILE_NAME = 'Ec2RoleInstanceProfile'
-LOG_POLICY_NAME = 'LogPolicy'
-LOG_GROUP_NAME = 'CloudFormationLogs'
-LOG_RETENTION_DAYS = 7
+import ec2_parameters # pylint: disable=W0403
 
 
 class EC2Resources(object):
     """Cloudformation resources that EC2 instances depend on."""
-    def __init__(
-            self, template, role_name=EC2_ROLE_NAME,
-            profile_name=EC2_INSTANCE_PROFILE_NAME,
-            log_policy_name=LOG_POLICY_NAME,
-            log_group_name=LOG_GROUP_NAME,
-            log_retention_days=LOG_RETENTION_DAYS):
+    def __init__(self, template):
         self.template = template
-        self.role_name = role_name
-        self.profile_name = profile_name
-        self.log_policy_name = log_policy_name
-        self.log_group_name = log_group_name
-        self.log_retention_days = log_retention_days
 
     def attach(self):
         """Attached an IAM Role, IAM Policy, and EC2 Instance Profile to a
         CloudFormation template and returns the template."
         """
         self.template.add_resource(iam.Role(
-            self.role_name,
+            'RoleResource',
             AssumeRolePolicyDocument={
                 "Version": "2012-10-17",
                 "Statement": [{
@@ -53,8 +38,8 @@ class EC2Resources(object):
 
         # Inline policy for the given role defined in the Roles attribute.
         self.template.add_resource(iam.PolicyType(
-            self.log_policy_name,
-            PolicyName=self.log_policy_name,
+            'LogPolicyResource',
+            PolicyName=Ref(self.template.parameters['LogPolicyName']),
             PolicyDocument={
                 "Version": "2012-10-17",
                 "Statement": [{
@@ -70,18 +55,19 @@ class EC2Resources(object):
                     ]
                 }]
             },
-            Roles=[Ref(self.role_name)]
+            Roles=[Ref(self.template.resources['RoleResource'])]
         ))
 
         self.template.add_resource(iam.InstanceProfile(
-            self.profile_name,
+            'InstanceProfileResource',
             Path="/",
-            Roles=[Ref(self.role_name)]
+            Roles=[Ref(self.template.resources['RoleResource'])]
         ))
 
         self.template.add_resource(LogGroup(
-            self.log_group_name,
-            RetentionInDays=self.log_retention_days
+            'LogGroupResource',
+            LogGroupName=Ref(self.template.parameters['LogGroupName']),
+            RetentionInDays=Ref(self.template.parameters['LogRetentionDays'])
         ))
 
         return self.template
@@ -94,6 +80,8 @@ def main():
     template.add_description('Create an IAM Role, IAM Policy, and EC2 '
                              'Instance Profile, and a CloudFormation log group '
                              'for EC2 Instances.')
+    parameters = ec2_parameters.EC2Parameters(template)
+    parameters.attach()
     ec2_resources = EC2Resources(template)
     ec2_resources.attach()
     print template.to_json()

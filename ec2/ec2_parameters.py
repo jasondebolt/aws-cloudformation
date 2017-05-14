@@ -59,6 +59,66 @@ class EC2Parameters(object):
                 'cr1.8xlarge', 'cc2.8xlarge', 'cg1.4xlarge'],
         ))
 
+        self.template.add_parameter(Parameter(
+            'RoleName',
+            Description=(
+                'The name you would like to give the role associated with '
+                'this EC2 instance.'),
+            Default='InstanceRole',
+            MinLength='1',
+            AllowedPattern=('^[a-zA-Z0-9]*$'),
+            MaxLength='15',
+            Type='String',
+        ))
+
+        self.template.add_parameter(Parameter(
+            'InstanceProfileName',
+            Description=(
+                'The instance profile name you would like to give the role '
+                'associated with this EC2 instance.'),
+            Default='InstanceProfile',
+            MinLength='1',
+            AllowedPattern=('^[a-zA-Z0-9]*$'),
+            MaxLength='15',
+            Type='String',
+        ))
+
+        self.template.add_parameter(Parameter(
+            'LogPolicyName',
+            Description=(
+                'The log policy name you would like to give the role '
+                'associated with this EC2 instance.'),
+            Default='LogPolicy',
+            MinLength='1',
+            AllowedPattern=('^[a-zA-Z0-9]*$'),
+            MaxLength='15',
+            Type='String',
+        ))
+
+        self.template.add_parameter(Parameter(
+            'LogGroupName',
+            Description=(
+                'The log group name you would like to give the role '
+                'associated with this EC2 instance.'),
+            Default='LogGroup',
+            MinLength='1',
+            AllowedPattern=('^[a-zA-Z0-9]*$'),
+            MaxLength='15',
+            Type='String',
+        ))
+
+        self.template.add_parameter(Parameter(
+            'LogRetentionDays',
+            Description=(
+                'The number of days you would like to retain the logs '
+                'associated with this instance in cloudwatch.'),
+            Default='7',
+            AllowedValues=[
+                '1', '3', '5', '7', '14', '30', '60', '90', '120', '150',
+                '180', '365', '400', '545', '731', '1827', '3653'],
+            Type='Number',
+        ))
+
         return ec2_mappings.attach_mappings(self.template)
 
 

@@ -19,10 +19,10 @@ class ChefNodeEC2Instance(object):
         """Attaches a bootstrapped Chef Node EC2 instance to an
         AWS CloudFormation template and returns the template.
         """
-        resources = ec2_resources.EC2Resources(self.template)
-        resources.attach()
         parameters = ec2_parameters.EC2Parameters(self.template)
         parameters.attach()
+        resources = ec2_resources.EC2Resources(self.template)
+        resources.attach()
 
         security_group = self.template.add_resource(ec2.SecurityGroup(
             'SecurityGroup',
@@ -50,21 +50,26 @@ class ChefNodeEC2Instance(object):
             InstanceType=Ref(self.template.parameters['InstanceType']),
             KeyName=Ref(self.template.parameters['KeyName']),
             SecurityGroups=[Ref(security_group)],
-            IamInstanceProfile=Ref(self.template.resources[
-                ec2_resources.EC2_INSTANCE_PROFILE_NAME]),
+            IamInstanceProfile=Ref(
+                self.template.resources['InstanceProfileResource']),
             UserData=Base64(Join('', [
-                '#!/bin/bash\n', 'sudo apt-get update\n',
-                'sudo apt-get -y install python-setuptools\n',
-                'sudo apt-get -y install python-pip\n',
-                ('sudo pip install https://s3.amazonaws.com'
-                 '/cloudformation-examples/'),
-                'aws-cfn-bootstrap-latest.tar.gz\n',
-                '\n',
+                '#!/bin/bash -xe\n',
+                'yum update -y \n',
+                'yum update -y aws-cfn-bootstrap\n',
+
+                '# Install the files and packages from the metadata\n',
                 '/opt/aws/bin/cfn-init -v ',
                 '         --stack ', Ref('AWS::StackName'),
                 '         --resource {0} '.format(EC2_INSTANCE_NAME),
                 '         --configsets InstallAndRun ',
                 '         --region ', Ref('AWS::Region'),
+                '\n',
+                '# Signal the status from cfn-init\n',
+                '/opt/aws/bin/cfn-signal -e $? ',
+                '         --stack ', Ref('AWS::StackName'),
+                '         --resource {0} '.format(EC2_INSTANCE_NAME),
+                '         --region ', Ref('AWS::Region'),
+                'sudo usermod -a -G docker ec2-user',
                 '\n'
             ])),
             Metadata=cloudformation.Metadata(
@@ -144,48 +149,54 @@ class ChefNodeEC2Instance(object):
                                     'state/agent-state\n',
                                     '[/var/log/cloud-init.log]\n',
                                     'file = /var/log/cloud-init.log\n',
-                                    'log_group_name = {0}\n'
-                                    .format(ec2_resources.LOG_GROUP_NAME),
+                                    Join('', ['log_group_name = ',
+                                              Ref(self.template.parameters[
+                                                  'LogGroupName'])]),
                                     'log_stream_name = ',
                                     '{instance_id}/cloud-init.log\n',
                                     'datetime_format = \n',
 
                                     '[/var/log/cloud-init-output.log]\n',
                                     'file = /var/log/cloud-init-output.log\n',
-                                    'log_group_name = {0}\n'
-                                    .format(ec2_resources.LOG_GROUP_NAME),
+                                    Join('', ['log_group_name = ',
+                                              Ref(self.template.parameters[
+                                                  'LogGroupName'])]),
                                     'log_stream_name = ',
                                     '{instance_id}/cloud-init-output.log\n',
                                     'datetime_format = \n',
 
                                     '[/var/log/cfn-init.log]\n',
                                     'file = /var/log/cfn-init.log\n',
-                                    'log_group_name = {0}\n'
-                                    .format(ec2_resources.LOG_GROUP_NAME),
+                                    Join('', ['log_group_name = ',
+                                              Ref(self.template.parameters[
+                                                  'LogGroupName'])]),
                                     'log_stream_name = ',
                                     '{instance_id}/cfn-init.log\n',
                                     'datetime_format = \n',
 
                                     '[/var/log/cfn-hup.log]\n',
                                     'file = /var/log/cfn-hup.log\n',
-                                    'log_group_name = {0}\n'
-                                    .format(ec2_resources.LOG_GROUP_NAME),
+                                    Join('', ['log_group_name = ',
+                                              Ref(self.template.parameters[
+                                                  'LogGroupName'])]),
                                     'log_stream_name = ',
                                     '{instance_id}/cfn-hup.log\n',
                                     'datetime_format = \n',
 
                                     '[/var/log/cfn-wire.log]\n',
                                     'file = /var/log/cfn-wire.log\n',
-                                    'log_group_name = {0}\n'
-                                    .format(ec2_resources.LOG_GROUP_NAME),
+                                    Join('', ['log_group_name = ',
+                                              Ref(self.template.parameters[
+                                                  'LogGroupName'])]),
                                     'log_stream_name = ',
                                     '{instance_id}/cfn-wire.log\n',
                                     'datetime_format = \n',
 
                                     '[/var/log/httpd]\n',
                                     'file = /var/log/httpd/*\n',
-                                    'log_group_name = {0}\n'
-                                    .format(ec2_resources.LOG_GROUP_NAME),
+                                    Join('', ['log_group_name = ',
+                                              Ref(self.template.parameters[
+                                                  'LogGroupName'])]),
                                     'log_stream_name = ',
                                     '{instance_id}/httpd\n',
                                     'datetime_format = %d/%b/%Y:%H:%M:%S\n'
@@ -196,7 +207,7 @@ class ChefNodeEC2Instance(object):
                                     '[plugins]\n',
                                     'cwlogs = cwlogs\n',
                                     '[default]\n',
-                                    'region =', Ref('AWS::Region'), '\n',
+                                    'region = ', Ref('AWS::Region'), '\n',
                                 ]),
                                 'mode': '000444',
                                 'owner': 'root',

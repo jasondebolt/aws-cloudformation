@@ -1,0 +1,34 @@
+[
+  {
+    "ParameterKey": "SSHLocation",
+    "ParameterValue": "0.0.0.0/0"
+  },
+  {
+    "ParameterKey": "KeyName",
+    "ParameterValue": "JasonOregonKeyPair"
+  },
+  {
+    "ParameterKey": "InstanceType",
+    "ParameterValue": "t2.micro"
+  },
+  {
+    "ParameterKey": "RoleName",
+    "ParameterValue": "InstanceRole"
+  },
+  {
+    "ParameterKey": "InstanceProfileName",
+    "ParameterValue": "InstanceProfile"
+  },
+  {
+    "ParameterKey": "LogPolicyName",
+    "ParameterValue": "LogPolicy"
+  },
+  {
+    "ParameterKey": "LogGroupName",
+    "ParameterValue": "CloudFormationLogs"
+  },
+  {
+    "ParameterKey": "LogRetentionDays",
+    "ParameterValue": "7"
+  }
+]

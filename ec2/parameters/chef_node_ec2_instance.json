@@ -1,0 +1,34 @@
+[
+  {
+    "ParameterKey": "SSHLocation",
+    "ParameterValue": "0.0.0.0/0"
+  },
+  {
+    "ParameterKey": "KeyName",
+    "ParameterValue": "JasonOregonKeyPair"
+  },
+  {
+    "ParameterKey": "InstanceType",
+    "ParameterValue": "t2.micro"
+  },
+  {
+    "ParameterKey": "RoleName",
+    "ParameterValue": "ChefNodeRole"
+  },
+  {
+    "ParameterKey": "InstanceProfileName",
+    "ParameterValue": "ChefNodeProfile"
+  },
+  {
+    "ParameterKey": "LogPolicyName",
+    "ParameterValue": "ChefNodeLogPlcy"
+  },
+  {
+    "ParameterKey": "LogGroupName",
+    "ParameterValue": "ChefNodeLogGrp"
+  },
+  {
+    "ParameterKey": "LogRetentionDays",
+    "ParameterValue": "14"
+  }
+]

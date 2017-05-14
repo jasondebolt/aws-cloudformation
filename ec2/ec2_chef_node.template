@@ -326,6 +326,14 @@
         }
     },
     "Parameters": {
+        "InstanceProfileName": {
+            "AllowedPattern": "^[a-zA-Z0-9]*$",
+            "Default": "InstanceProfile",
+            "Description": "The instance profile name you would like to give the role associated with this EC2 instance.",
+            "MaxLength": "15",
+            "MinLength": "1",
+            "Type": "String"
+        },
         "InstanceType": {
             "AllowedValues": [
                 "t1.micro",
@@ -392,6 +400,54 @@
             "ConstraintDescription": "must be the name of an existing EC2 KeyPair.",
             "Description": "Name of an existing EC2 KeyPair to enable SSH access to the instance",
             "Type": "AWS::EC2::KeyPair::KeyName"
+        },
+        "LogGroupName": {
+            "AllowedPattern": "^[a-zA-Z0-9]*$",
+            "Default": "LogGroup",
+            "Description": "The log group name you would like to give the role associated with this EC2 instance.",
+            "MaxLength": "15",
+            "MinLength": "1",
+            "Type": "String"
+        },
+        "LogPolicyName": {
+            "AllowedPattern": "^[a-zA-Z0-9]*$",
+            "Default": "LogPolicy",
+            "Description": "The log policy name you would like to give the role associated with this EC2 instance.",
+            "MaxLength": "15",
+            "MinLength": "1",
+            "Type": "String"
+        },
+        "LogRetentionDays": {
+            "AllowedValues": [
+                "1",
+                "3",
+                "5",
+                "7",
+                "14",
+                "30",
+                "60",
+                "90",
+                "120",
+                "150",
+                "180",
+                "365",
+                "400",
+                "545",
+                "731",
+                "1827",
+                "3653"
+            ],
+            "Default": "7",
+            "Description": "The number of days you would like to retain the logs associated with this instance in cloudwatch.",
+            "Type": "Number"
+        },
+        "RoleName": {
+            "AllowedPattern": "^[a-zA-Z0-9]*$",
+            "Default": "InstanceRole",
+            "Description": "The name you would like to give the role associated with this EC2 instance.",
+            "MaxLength": "15",
+            "MinLength": "1",
+            "Type": "String"
         },
         "SSHLocation": {
             "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
@@ -521,7 +577,7 @@
                                             "[plugins]\n",
                                             "cwlogs = cwlogs\n",
                                             "[default]\n",
-                                            "region =",
+                                            "region = ",
                                             {
                                                 "Ref": "AWS::Region"
                                             },
@@ -543,37 +599,97 @@
                                             "state/agent-state\n",
                                             "[/var/log/cloud-init.log]\n",
                                             "file = /var/log/cloud-init.log\n",
-                                            "log_group_name = CloudFormationLogs\n",
+                                            {
+                                                "Fn::Join": [
+                                                    "",
+                                                    [
+                                                        "log_group_name = ",
+                                                        {
+                                                            "Ref": "LogGroupName"
+                                                        }
+                                                    ]
+                                                ]
+                                            },
                                             "log_stream_name = ",
                                             "{instance_id}/cloud-init.log\n",
                                             "datetime_format = \n",
                                             "[/var/log/cloud-init-output.log]\n",
                                             "file = /var/log/cloud-init-output.log\n",
-                                            "log_group_name = CloudFormationLogs\n",
+                                            {
+                                                "Fn::Join": [
+                                                    "",
+                                                    [
+                                                        "log_group_name = ",
+                                                        {
+                                                            "Ref": "LogGroupName"
+                                                        }
+                                                    ]
+                                                ]
+                                            },
                                             "log_stream_name = ",
                                             "{instance_id}/cloud-init-output.log\n",
                                             "datetime_format = \n",
                                             "[/var/log/cfn-init.log]\n",
                                             "file = /var/log/cfn-init.log\n",
-                                            "log_group_name = CloudFormationLogs\n",
+                                            {
+                                                "Fn::Join": [
+                                                    "",
+                                                    [
+                                                        "log_group_name = ",
+                                                        {
+                                                            "Ref": "LogGroupName"
+                                                        }
+                                                    ]
+                                                ]
+                                            },
                                             "log_stream_name = ",
                                             "{instance_id}/cfn-init.log\n",
                                             "datetime_format = \n",
                                             "[/var/log/cfn-hup.log]\n",
                                             "file = /var/log/cfn-hup.log\n",
-                                            "log_group_name = CloudFormationLogs\n",
+                                            {
+                                                "Fn::Join": [
+                                                    "",
+                                                    [
+                                                        "log_group_name = ",
+                                                        {
+                                                            "Ref": "LogGroupName"
+                                                        }
+                                                    ]
+                                                ]
+                                            },
                                             "log_stream_name = ",
                                             "{instance_id}/cfn-hup.log\n",
                                             "datetime_format = \n",
                                             "[/var/log/cfn-wire.log]\n",
                                             "file = /var/log/cfn-wire.log\n",
-                                            "log_group_name = CloudFormationLogs\n",
+                                            {
+                                                "Fn::Join": [
+                                                    "",
+                                                    [
+                                                        "log_group_name = ",
+                                                        {
+                                                            "Ref": "LogGroupName"
+                                                        }
+                                                    ]
+                                                ]
+                                            },
                                             "log_stream_name = ",
                                             "{instance_id}/cfn-wire.log\n",
                                             "datetime_format = \n",
                                             "[/var/log/httpd]\n",
                                             "file = /var/log/httpd/*\n",
-                                            "log_group_name = CloudFormationLogs\n",
+                                            {
+                                                "Fn::Join": [
+                                                    "",
+                                                    [
+                                                        "log_group_name = ",
+                                                        {
+                                                            "Ref": "LogGroupName"
+                                                        }
+                                                    ]
+                                                ]
+                                            },
                                             "log_stream_name = ",
                                             "{instance_id}/httpd\n",
                                             "datetime_format = %d/%b/%Y:%H:%M:%S\n"
@@ -610,7 +726,7 @@
             },
             "Properties": {
                 "IamInstanceProfile": {
-                    "Ref": "Ec2RoleInstanceProfile"
+                    "Ref": "InstanceProfileResource"
                 },
                 "ImageId": {
                     "Fn::FindInMap": [
@@ -655,13 +771,10 @@
                         "Fn::Join": [
                             "",
                             [
-                                "#!/bin/bash\n",
-                                "sudo apt-get update\n",
-                                "sudo apt-get -y install python-setuptools\n",
-                                "sudo apt-get -y install python-pip\n",
-                                "sudo pip install https://s3.amazonaws.com/cloudformation-examples/",
-                                "aws-cfn-bootstrap-latest.tar.gz\n",
-                                "\n",
+                                "#!/bin/bash -xe\n",
+                                "yum update -y \n",
+                                "yum update -y aws-cfn-bootstrap\n",
+                                "# Install the files and packages from the metadata\n",
                                 "/opt/aws/bin/cfn-init -v ",
                                 "         --stack ",
                                 {
@@ -673,6 +786,19 @@
                                 {
                                     "Ref": "AWS::Region"
                                 },
+                                "\n",
+                                "# Signal the status from cfn-init\n",
+                                "/opt/aws/bin/cfn-signal -e $? ",
+                                "         --stack ",
+                                {
+                                    "Ref": "AWS::StackName"
+                                },
+                                "         --resource ChefNodeInstance ",
+                                "         --region ",
+                                {
+                                    "Ref": "AWS::Region"
+                                },
+                                "sudo usermod -a -G docker ec2-user",
                                 "\n"
                             ]
                         ]
@@ -681,13 +807,59 @@
             },
             "Type": "AWS::EC2::Instance"
         },
-        "CloudFormationLogs": {
+        "InstanceProfileResource": {
             "Properties": {
-                "RetentionInDays": 7
+                "Path": "/",
+                "Roles": [
+                    {
+                        "Ref": "RoleResource"
+                    }
+                ]
+            },
+            "Type": "AWS::IAM::InstanceProfile"
+        },
+        "LogGroupResource": {
+            "Properties": {
+                "LogGroupName": {
+                    "Ref": "LogGroupName"
+                },
+                "RetentionInDays": {
+                    "Ref": "LogRetentionDays"
+                }
             },
             "Type": "AWS::Logs::LogGroup"
         },
-        "Ec2Role": {
+        "LogPolicyResource": {
+            "Properties": {
+                "PolicyDocument": {
+                    "Statement": [
+                        {
+                            "Action": [
+                                "logs:CreateLogGroup",
+                                "logs:CreateLogStream",
+                                "logs:PutLogEvents",
+                                "logs:DescribeLogStreams"
+                            ],
+                            "Effect": "Allow",
+                            "Resource": [
+                                "*"
+                            ]
+                        }
+                    ],
+                    "Version": "2012-10-17"
+                },
+                "PolicyName": {
+                    "Ref": "LogPolicyName"
+                },
+                "Roles": [
+                    {
+                        "Ref": "RoleResource"
+                    }
+                ]
+            },
+            "Type": "AWS::IAM::Policy"
+        },
+        "RoleResource": {
             "Properties": {
                 "AssumeRolePolicyDocument": {
                     "Statement": [
@@ -712,45 +884,6 @@
                 "Path": "/"
             },
             "Type": "AWS::IAM::Role"
-        },
-        "Ec2RoleInstanceProfile": {
-            "Properties": {
-                "Path": "/",
-                "Roles": [
-                    {
-                        "Ref": "Ec2Role"
-                    }
-                ]
-            },
-            "Type": "AWS::IAM::InstanceProfile"
-        },
-        "LogPolicy": {
-            "Properties": {
-                "PolicyDocument": {
-                    "Statement": [
-                        {
-                            "Action": [
-                                "logs:CreateLogGroup",
-                                "logs:CreateLogStream",
-                                "logs:PutLogEvents",
-                                "logs:DescribeLogStreams"
-                            ],
-                            "Effect": "Allow",
-                            "Resource": [
-                                "*"
-                            ]
-                        }
-                    ],
-                    "Version": "2012-10-17"
-                },
-                "PolicyName": "LogPolicy",
-                "Roles": [
-                    {
-                        "Ref": "Ec2Role"
-                    }
-                ]
-            },
-            "Type": "AWS::IAM::Policy"
         },
         "SecurityGroup": {
             "Properties": {
