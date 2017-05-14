@@ -319,7 +319,7 @@
             "Description": "Public IP of the newly created EC2 instance",
             "Value": {
                 "Fn::GetAtt": [
-                    "Ec2Instance",
+                    "ChefNodeInstance",
                     "PublicIp"
                 ]
             }
@@ -404,44 +404,7 @@
         }
     },
     "Resources": {
-        "EC2Role": {
-            "Properties": {
-                "AssumeRolePolicyDocument": {
-                    "Statement": [
-                        {
-                            "Action": [
-                                "sts:AssumeRole"
-                            ],
-                            "Effect": "Allow",
-                            "Principal": {
-                                "Service": [
-                                    "ec2.amazonaws.com",
-                                    "opsworks.amazonaws.com"
-                                ]
-                            }
-                        }
-                    ],
-                    "Version": "2012-10-17"
-                },
-                "ManagedPolicyArns": [
-                    "arn:aws:iam::aws:policy/AmazonS3FullAccess"
-                ],
-                "Path": "/"
-            },
-            "Type": "AWS::IAM::Role"
-        },
-        "EC2RoleInstanceProfile": {
-            "Properties": {
-                "Path": "/",
-                "Roles": [
-                    {
-                        "Ref": "EC2Role"
-                    }
-                ]
-            },
-            "Type": "AWS::IAM::InstanceProfile"
-        },
-        "Ec2Instance": {
+        "ChefNodeInstance": {
             "Metadata": {
                 "AWS::CloudFormation::Init": {
                     "Configure": {
@@ -498,15 +461,15 @@
                                         [
                                             "[cfn-auto-reloader-hook]\n",
                                             "triggers=post.update\n",
-                                            "path=Resources.Ec2Instance.Metadata.AWS::CloudFormation::Init\n",
+                                            "path=Resources.ChefNodeInstance.Metadata.AWS::CloudFormation::Init\n",
                                             "action=/opt/aws/bin/cfn-init -v ",
-                                            "       --stack ",
+                                            "     --stack ",
                                             {
                                                 "Ref": "AWS::StackName"
                                             },
-                                            "       --resource Ec2Instance ",
-                                            "       --configsets InstallAndRun ",
-                                            "       --region ",
+                                            "     --resource ChefNodeInstance ",
+                                            "     --configsets InstallAndRun ",
+                                            "     --region ",
                                             {
                                                 "Ref": "AWS::Region"
                                             },
@@ -538,6 +501,9 @@
                     },
                     "InstallLogs": {
                         "commands": {
+                            "01_create_state_directory": {
+                                "command": "mkdir -p /var/awslogs/state"
+                            },
                             "test": {
                                 "command": "echo \"$CFNTEST\" > InstallLogs.txt",
                                 "cwd": "~",
@@ -546,9 +512,90 @@
                                 }
                             }
                         },
+                        "files": {
+                            "/etc/awslogs/awscli.conf": {
+                                "content": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "[plugins]\n",
+                                            "cwlogs = cwlogs\n",
+                                            "[default]\n",
+                                            "region =",
+                                            {
+                                                "Ref": "AWS::Region"
+                                            },
+                                            "\n"
+                                        ]
+                                    ]
+                                },
+                                "group": "root",
+                                "mode": "000444",
+                                "owner": "root"
+                            },
+                            "/etc/awslogs/awslogs.conf": {
+                                "content": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "[general]\n",
+                                            "state_file= /var/awslogs/",
+                                            "state/agent-state\n",
+                                            "[/var/log/cloud-init.log]\n",
+                                            "file = /var/log/cloud-init.log\n",
+                                            "log_group_name = CloudFormationLogs\n",
+                                            "log_stream_name = ",
+                                            "{instance_id}/cloud-init.log\n",
+                                            "datetime_format = \n",
+                                            "[/var/log/cloud-init-output.log]\n",
+                                            "file = /var/log/cloud-init-output.log\n",
+                                            "log_group_name = CloudFormationLogs\n",
+                                            "log_stream_name = ",
+                                            "{instance_id}/cloud-init-output.log\n",
+                                            "datetime_format = \n",
+                                            "[/var/log/cfn-init.log]\n",
+                                            "file = /var/log/cfn-init.log\n",
+                                            "log_group_name = CloudFormationLogs\n",
+                                            "log_stream_name = ",
+                                            "{instance_id}/cfn-init.log\n",
+                                            "datetime_format = \n",
+                                            "[/var/log/cfn-hup.log]\n",
+                                            "file = /var/log/cfn-hup.log\n",
+                                            "log_group_name = CloudFormationLogs\n",
+                                            "log_stream_name = ",
+                                            "{instance_id}/cfn-hup.log\n",
+                                            "datetime_format = \n",
+                                            "[/var/log/cfn-wire.log]\n",
+                                            "file = /var/log/cfn-wire.log\n",
+                                            "log_group_name = CloudFormationLogs\n",
+                                            "log_stream_name = ",
+                                            "{instance_id}/cfn-wire.log\n",
+                                            "datetime_format = \n",
+                                            "[/var/log/httpd]\n",
+                                            "file = /var/log/httpd/*\n",
+                                            "log_group_name = CloudFormationLogs\n",
+                                            "log_stream_name = ",
+                                            "{instance_id}/httpd\n",
+                                            "datetime_format = %d/%b/%Y:%H:%M:%S\n"
+                                        ]
+                                    ]
+                                }
+                            }
+                        },
                         "packages": {
                             "yum": {
                                 "awslogs": []
+                            }
+                        },
+                        "services": {
+                            "sysvinit": {
+                                "awslogs": {
+                                    "enabled": "true",
+                                    "ensureRunning": "true",
+                                    "files": [
+                                        "/etc/awslogs/awslogs.conf"
+                                    ]
+                                }
                             }
                         }
                     },
@@ -563,7 +610,7 @@
             },
             "Properties": {
                 "IamInstanceProfile": {
-                    "Ref": "EC2RoleInstanceProfile"
+                    "Ref": "Ec2RoleInstanceProfile"
                 },
                 "ImageId": {
                     "Fn::FindInMap": [
@@ -620,7 +667,7 @@
                                 {
                                     "Ref": "AWS::StackName"
                                 },
-                                "         --resource Ec2Instance ",
+                                "         --resource ChefNodeInstance ",
                                 "         --configsets InstallAndRun ",
                                 "         --region ",
                                 {
@@ -633,6 +680,49 @@
                 }
             },
             "Type": "AWS::EC2::Instance"
+        },
+        "CloudFormationLogs": {
+            "Properties": {
+                "RetentionInDays": 7
+            },
+            "Type": "AWS::Logs::LogGroup"
+        },
+        "Ec2Role": {
+            "Properties": {
+                "AssumeRolePolicyDocument": {
+                    "Statement": [
+                        {
+                            "Action": [
+                                "sts:AssumeRole"
+                            ],
+                            "Effect": "Allow",
+                            "Principal": {
+                                "Service": [
+                                    "ec2.amazonaws.com",
+                                    "opsworks.amazonaws.com"
+                                ]
+                            }
+                        }
+                    ],
+                    "Version": "2012-10-17"
+                },
+                "ManagedPolicyArns": [
+                    "arn:aws:iam::aws:policy/AmazonS3FullAccess"
+                ],
+                "Path": "/"
+            },
+            "Type": "AWS::IAM::Role"
+        },
+        "Ec2RoleInstanceProfile": {
+            "Properties": {
+                "Path": "/",
+                "Roles": [
+                    {
+                        "Ref": "Ec2Role"
+                    }
+                ]
+            },
+            "Type": "AWS::IAM::InstanceProfile"
         },
         "LogPolicy": {
             "Properties": {
@@ -656,7 +746,7 @@
                 "PolicyName": "LogPolicy",
                 "Roles": [
                     {
-                        "Ref": "EC2Role"
+                        "Ref": "Ec2Role"
                     }
                 ]
             },

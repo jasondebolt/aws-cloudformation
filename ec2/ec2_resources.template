@@ -8,7 +8,7 @@
             },
             "Type": "AWS::Logs::LogGroup"
         },
-        "EC2Role": {
+        "Ec2Role": {
             "Properties": {
                 "AssumeRolePolicyDocument": {
                     "Statement": [
@@ -34,12 +34,12 @@
             },
             "Type": "AWS::IAM::Role"
         },
-        "EC2RoleInstanceProfile": {
+        "Ec2RoleInstanceProfile": {
             "Properties": {
                 "Path": "/",
                 "Roles": [
                     {
-                        "Ref": "EC2Role"
+                        "Ref": "Ec2Role"
                     }
                 ]
             },
@@ -67,7 +67,7 @@
                 "PolicyName": "LogPolicy",
                 "Roles": [
                     {
-                        "Ref": "EC2Role"
+                        "Ref": "Ec2Role"
                     }
                 ]
             },
