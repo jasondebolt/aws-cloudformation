@@ -468,21 +468,35 @@
     "Resources": {
         "ChefNodeInstance": {
             "Metadata": {
+                "AWS::CloudFormation::Authentication": {
+                    "S3AccessCreds": {
+                        "roleName": {
+                            "Ref": "RoleResource"
+                        },
+                        "type": "S3"
+                    }
+                },
                 "AWS::CloudFormation::Init": {
                     "Configure": {
                         "commands": {
-                            "test": {
+                            "01_test": {
                                 "command": "echo \"$CFNTEST\" > Configure.txt",
                                 "cwd": "~",
                                 "env": {
                                     "CFNTEST": "I come from Configure."
                                 }
+                            },
+                            "02_docker": {
+                                "command": "usermod -a -G docker ec2-user"
+                            },
+                            "03_chef_bootstrap": {
+                                "command": "chef-client -j /etc/chef/first-run.json"
                             }
                         }
                     },
                     "Install": {
                         "commands": {
-                            "test": {
+                            "01_test": {
                                 "command": "echo \"$CFNTEST\" > Install.txt",
                                 "cwd": "~",
                                 "env": {
@@ -561,12 +575,42 @@
                             }
                         }
                     },
+                    "InstallChef": {
+                        "commands": {
+                            "01_invoke_omnitruck_install": {
+                                "command": "curl -L https://omnitruck.chef.io/install.sh | bash"
+                            }
+                        },
+                        "files": {
+                            "/etc/chef/client.rb": {
+                                "authentication": "S3AccessCreds",
+                                "group": "root",
+                                "mode": "000600",
+                                "owner": "root",
+                                "source": "https://s3-us-west-2.amazonaws.com/jasondebolt-chef/client.rb"
+                            },
+                            "/etc/chef/first-run.json": {
+                                "authentication": "S3AccessCreds",
+                                "group": "root",
+                                "mode": "000600",
+                                "owner": "root",
+                                "source": "https://s3-us-west-2.amazonaws.com/jasondebolt-chef/first-run.json"
+                            },
+                            "/etc/chef/jasondebolt-validator.pem": {
+                                "authentication": "S3AccessCreds",
+                                "group": "root",
+                                "mode": "000600",
+                                "owner": "root",
+                                "source": "https://s3-us-west-2.amazonaws.com/jasondebolt-chef/jasondebolt-validator.pem"
+                            }
+                        }
+                    },
                     "InstallLogs": {
                         "commands": {
                             "01_create_state_directory": {
                                 "command": "mkdir -p /var/awslogs/state"
                             },
-                            "test": {
+                            "02_test": {
                                 "command": "echo \"$CFNTEST\" > InstallLogs.txt",
                                 "cwd": "~",
                                 "env": {
@@ -731,6 +775,7 @@
                         "InstallAndRun": [
                             "Install",
                             "InstallLogs",
+                            "InstallChef",
                             "Configure"
                         ]
                     }
@@ -771,7 +816,9 @@
                 "Tags": [
                     {
                         "Key": "Name",
-                        "Value": "ops.cfninit"
+                        "Value": {
+                            "Ref": "AWS::StackName"
+                        }
                     },
                     {
                         "Key": "env",
@@ -798,6 +845,10 @@
                                 {
                                     "Ref": "AWS::Region"
                                 },
+                                "         --role ",
+                                {
+                                    "Ref": "RoleResource"
+                                },
                                 "\n",
                                 "# Signal the status from cfn-init\n",
                                 "/opt/aws/bin/cfn-signal -e $? ",
@@ -810,7 +861,10 @@
                                 {
                                     "Ref": "AWS::Region"
                                 },
-                                "sudo usermod -a -G docker ec2-user",
+                                "         --role ",
+                                {
+                                    "Ref": "RoleResource"
+                                },
                                 "\n"
                             ]
                         ]
@@ -818,6 +872,31 @@
                 }
             },
             "Type": "AWS::EC2::Instance"
+        },
+        "DefaultPolicyResource": {
+            "Properties": {
+                "PolicyDocument": {
+                    "Statement": [
+                        {
+                            "Action": [
+                                "cloudformation:*"
+                            ],
+                            "Effect": "Allow",
+                            "Resource": [
+                                "*"
+                            ]
+                        }
+                    ],
+                    "Version": "2012-10-17"
+                },
+                "PolicyName": "DefaultPolicyName",
+                "Roles": [
+                    {
+                        "Ref": "RoleResource"
+                    }
+                ]
+            },
+            "Type": "AWS::IAM::Policy"
         },
         "InstanceProfileResource": {
             "Properties": {
@@ -831,7 +910,7 @@
             "Type": "AWS::IAM::InstanceProfile"
         },
         "LogGroupResource": {
-            "DeletionPolicy": "Retain",
+            "DeletionPolicy": "Delete",
             "Properties": {
                 "RetentionInDays": {
                     "Ref": "LogRetentionDays"
@@ -906,12 +985,18 @@
                         "FromPort": 22,
                         "IpProtocol": "tcp",
                         "ToPort": 22
+                    },
+                    {
+                        "CidrIp": "0.0.0.0/0",
+                        "FromPort": 80,
+                        "IpProtocol": "tcp",
+                        "ToPort": 80
                     }
                 ],
                 "Tags": [
                     {
                         "Key": "Name",
-                        "Value": "ChefNodeSecurityGroup"
+                        "Value": "ChefNodeInstanceSecurityGroup"
                     }
                 ]
             },

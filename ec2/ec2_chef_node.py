@@ -1,4 +1,12 @@
-"""Generates an AWS CloudFormation template to bootstrap a Chef node."""
+"""Generates an AWS CloudFormation template to bootstrap a Chef node.
+
+You must have an S3 bucket with the following files
+    {S3_BUCKET_PATH}/{VALIDATOR_FILENAME}
+    {S3_BUCKET_PATH}/{FIRST_RUN_FILENAME}
+    {S3_BUCKET_PATH}/client.rb
+
+Change the constants below with the names of your chef-client files.
+"""
 from troposphere import Base64, FindInMap, Join, Output, GetAtt, Tags
 from troposphere import Ref, Template
 from troposphere import cloudformation
@@ -6,7 +14,19 @@ import troposphere.ec2 as ec2
 import ec2_parameters # pylint: disable=W0403
 import ec2_resources # pylint: disable=W0403
 
+
 EC2_INSTANCE_NAME = 'ChefNodeInstance'
+
+# Where are your chef-client related files stored?
+S3_CHEF_BOOTSTRAP_PATH = 'https://s3-us-west-2.amazonaws.com/jasondebolt-chef/'
+
+# What are the names of your validator and first run files?
+VALIDATOR_FILENAME = 'jasondebolt-validator.pem'
+FIRST_RUN_FILENAME = 'first-run.json'
+
+S3_FIRST_RUN = '{0}{1}'.format(S3_CHEF_BOOTSTRAP_PATH, FIRST_RUN_FILENAME)
+S3_CLIENT_RB = '{0}client.rb'.format(S3_CHEF_BOOTSTRAP_PATH)
+S3_VALIDATOR_PEM = '{0}{1}'.format(S3_CHEF_BOOTSTRAP_PATH, VALIDATOR_FILENAME)
 
 
 class ChefNodeEC2Instance(object):
@@ -34,10 +54,16 @@ class ChefNodeEC2Instance(object):
                     FromPort=22,
                     ToPort=22,
                     CidrIp=Ref(self.template.parameters['SSHLocation'])
+                ),
+                ec2.SecurityGroupRule(
+                    IpProtocol='tcp',
+                    FromPort=80,
+                    ToPort=80,
+                    CidrIp='0.0.0.0/0'
                 )
             ],
             Tags=Tags(
-                Name='ChefNodeSecurityGroup'
+                Name='{0}SecurityGroup'.format(EC2_INSTANCE_NAME)
             )
         ))
 
@@ -57,26 +83,29 @@ class ChefNodeEC2Instance(object):
                 '#!/bin/bash -xe\n',
                 'yum update -y \n',
                 'yum update -y aws-cfn-bootstrap\n',
-
                 '# Install the files and packages from the metadata\n',
                 '/opt/aws/bin/cfn-init -v ',
                 '         --stack ', Ref('AWS::StackName'),
                 '         --resource {0} '.format(EC2_INSTANCE_NAME),
                 '         --configsets InstallAndRun ',
                 '         --region ', Ref('AWS::Region'),
+                '         --role ',
+                Ref(self.template.resources['RoleResource']),
                 '\n',
                 '# Signal the status from cfn-init\n',
                 '/opt/aws/bin/cfn-signal -e $? ',
                 '         --stack ', Ref('AWS::StackName'),
                 '         --resource {0} '.format(EC2_INSTANCE_NAME),
                 '         --region ', Ref('AWS::Region'),
-                'sudo usermod -a -G docker ec2-user',
+                '         --role ',
+                Ref(self.template.resources['RoleResource']),
                 '\n'
             ])),
             Metadata=cloudformation.Metadata(
                 cloudformation.Init(
                     cloudformation.InitConfigSets(
-                        InstallAndRun=['Install', 'InstallLogs', 'Configure']
+                        InstallAndRun=['Install', 'InstallLogs', 'InstallChef',
+                                       'Configure']
                     ),
                     Install=cloudformation.InitConfig(
                         packages={
@@ -127,7 +156,7 @@ class ChefNodeEC2Instance(object):
                             }
                         },
                         commands={
-                            'test': {
+                            '01_test': {
                                 'command': 'echo "$CFNTEST" > Install.txt',
                                 'env': {
                                     'CFNTEST': 'I come from Install.'
@@ -219,7 +248,7 @@ class ChefNodeEC2Instance(object):
                             '01_create_state_directory': {
                                 'command' : 'mkdir -p /var/awslogs/state'
                             },
-                            'test': {
+                            '02_test': {
                                 'command': 'echo "$CFNTEST" > InstallLogs.txt',
                                 'env': {
                                     'CFNTEST': 'I come from install_logs.'
@@ -237,21 +266,69 @@ class ChefNodeEC2Instance(object):
                             }
                         }
                     ),
+                    InstallChef=cloudformation.InitConfig(
+                        commands={
+                            '01_invoke_omnitruck_install': {
+                                'command': (
+                                    'curl -L '
+                                    'https://omnitruck.chef.io/install.sh | '
+                                    'bash'
+                                ),
+                            }
+                        },
+                        files={
+                            '/etc/chef/client.rb': {
+                                'source': S3_CLIENT_RB,
+                                'mode': '000600',
+                                'owner': 'root',
+                                'group': 'root',
+                                'authentication': 'S3AccessCreds'
+                            },
+                            '/etc/chef/jasondebolt-validator.pem': {
+                                'source': S3_VALIDATOR_PEM,
+                                'mode': '000600',
+                                'owner': 'root',
+                                'group': 'root',
+                                'authentication': 'S3AccessCreds'
+                            },
+                            '/etc/chef/first-run.json': {
+                                'source': S3_FIRST_RUN,
+                                'mode': '000600',
+                                'owner': 'root',
+                                'group': 'root',
+                                'authentication': 'S3AccessCreds'
+                            }
+                        }
+                    ),
                     Configure=cloudformation.InitConfig(
                         commands={
-                            'test': {
+                            '01_test': {
                                 'command': 'echo "$CFNTEST" > Configure.txt',
                                 'env': {
                                     'CFNTEST': 'I come from Configure.'
                                 },
                                 'cwd': '~'
+                            },
+                            '02_docker': {
+                                'command': 'usermod -a -G docker ec2-user'
+                            },
+                            '03_chef_bootstrap': {
+                                'command': (
+                                    'chef-client -j '
+                                    '/etc/chef/first-run.json'
+                                )
                             }
                         }
                     )
-                )
+                ),
+                cloudformation.Authentication({
+                    'S3AccessCreds': cloudformation.AuthenticationBlock(
+                        type='S3',
+                        roleName=Ref(self.template.resources['RoleResource']))
+                })
             ),
             Tags=Tags(
-                Name='ops.cfninit',
+                Name=Ref('AWS::StackName'),
                 env='ops'
             )
         ))

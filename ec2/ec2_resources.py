@@ -59,6 +59,25 @@ class EC2Resources(object):
             Roles=[Ref(self.template.resources['RoleResource'])]
         ))
 
+        # Inline policy for the given role defined in the Roles attribute.
+        self.template.add_resource(iam.PolicyType(
+            'DefaultPolicyResource',
+            PolicyName='DefaultPolicyName',
+            PolicyDocument={
+                "Version": "2012-10-17",
+                "Statement": [{
+                    "Effect": "Allow",
+                    "Resource": [
+                        "*"
+                    ],
+                    "Action": [
+                        "cloudformation:*"
+                    ]
+                }]
+            },
+            Roles=[Ref(self.template.resources['RoleResource'])]
+        ))
+
         self.template.add_resource(iam.InstanceProfile(
             'InstanceProfileResource',
             Path="/",
