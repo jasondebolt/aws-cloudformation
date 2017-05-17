@@ -33,6 +33,25 @@ def attach_mappings(template):
         )
 
     template.add_mapping(
+        "Region2KeyPair",
+        {u'ap-northeast-1': {u'key': 'tokyo'},
+         u'ap-northeast-2': {u'key': 'seoul'},
+         u'ap-south-1': {u'key': 'mumbai'},
+         u'ap-southeast-1': {u'key': 'singapore'},
+         u'ap-southeast-2': {u'key': 'sydney'},
+         u'cn-north-1': {u'key': 'NO ACCESS TO CHINA FOR US USERS'},
+         u'eu-central-1': {u'key': 'frankfurt'},
+         u'eu-west-1': {u'key': 'ireland'},
+         u'eu-west-2': {u'key': 'london'},
+         u'sa-east-1': {u'key': 'sao-paulo'},
+         u'ca-central-1': {u'key': 'central-canada'},
+         u'us-east-1': {u'key': 'north-virginia'},
+         u'us-east-2': {u'key': 'ohio'},
+         u'us-west-1': {u'key': 'northern-california'},
+         u'us-west-2': {u'key': 'oregon'}}
+    )
+
+    template.add_mapping(
         "Region2ARNPrefix",
         {u'ap-northeast-1': {u'ARNPrefix': u'arn:aws:'},
          u'ap-northeast-2': {u'ARNPrefix': u'arn:aws:'},
@@ -104,9 +123,48 @@ def attach_mappings(template):
          u't2.nano': {u'Arch': u'HVM64'},
          u't2.small': {u'Arch': u'HVM64'}}
         )
+    template.add_mapping(
+        "AWSRegionArch2Centos7LinuxAMI",
+        {u'ap-northeast-1': {u'HVM64': u'ami-571e3c30',
+                             u'HVMG2': u'NOT_SUPPORTED',
+                             u'PV64': u'NOT_SUPPORTED'},
+         u'ap-northeast-2': {u'HVM64': u'ami-97cb19f9',
+                             u'HVMG2': u'NOT_SUPPORTED',
+                             u'PV64': u'NOT_SUPPORTED'},
+         u'ap-south-1': {u'HVM64': u'ami-11f0837e',
+                         u'HVMG2': u'NOT_SUPPORTED',
+                         u'PV64': u'NOT_SUPPORTED'},
+         u'ap-southeast-1': {u'HVM64': u'ami-30318f53',
+                             u'HVMG2': u'NOT_SUPPORTED',
+                             u'PV64': u'NOT_SUPPORTED'},
+         u'ap-southeast-2': {u'HVM64': u'ami-24959b47',
+                             u'HVMG2': u'NOT_SUPPORTED',
+                             u'PV64': u'NOT_SUPPORTED'},
+         u'cn-north-1': {u'HVM64': u'NOT_SUPPORTED',
+                         u'HVMG2': u'NOT_SUPPORTED',
+                         u'PV64': u'NOT_SUPPORTED'},
+         u'eu-central-1': {u'HVM64': u'ami-7cbc6e13',
+                           u'HVMG2': u'NOT_SUPPORTED',
+                           u'PV64': u'NOT_SUPPORTED'},
+         u'eu-west-1': {u'HVM64': u'ami-0d063c6b',
+                        u'HVMG2': u'NOT_SUPPORTED',
+                        u'PV64': u'NOT_SUPPORTED'},
+         u'sa-east-1': {u'HVM64': u'ami-864f2dea',
+                        u'HVMG2': u'NOT_SUPPORTED',
+                        u'PV64': u'NOT_SUPPORTED'},
+         u'us-east-1': {u'HVM64': u'ami-ae7bfdb8',
+                        u'HVMG2': u'NOT_SUPPORTED',
+                        u'PV64': u'NOT_SUPPORTED'},
+         u'us-west-1': {u'HVM64': u'ami-7c280d1c',
+                        u'HVMG2': u'NOT_SUPPORTED',
+                        u'PV64': u'NOT_SUPPORTED'},
+         u'us-west-2': {u'HVM64': u'ami-0c2aba6c',
+                        u'HVMG2': u'NOT_SUPPORTED',
+                        u'PV64': u'NOT_SUPPORTED'}}
+    )
 
     template.add_mapping(
-        "AWSRegionArch2AMI",
+        "AWSRegionArch2AmazonLinuxAMI",
         {u'ap-northeast-1': {u'HVM64': u'ami-374db956',
                              u'HVMG2': u'ami-e0ee1981',
                              u'PV64': u'ami-3e42b65f'},

@@ -1,6 +1,6 @@
 """Creates common parameters for EC2 instances resources within CloudFormation.
 """
-from troposphere import Parameter, Template
+from troposphere import Parameter, Template, Condition, Equals, Ref, FindInMap
 import ec2_mappings # pylint: disable=W0403
 
 
@@ -29,15 +29,6 @@ class EC2Parameters(object):
         ))
 
         self.template.add_parameter(Parameter(
-            'KeyName',
-            ConstraintDescription=(
-                'must be the name of an existing EC2 KeyPair.'),
-            Type='AWS::EC2::KeyPair::KeyName',
-            Description=('Name of an existing EC2 KeyPair to enable SSH access '
-                         'to the instance'),
-        ))
-
-        self.template.add_parameter(Parameter(
             'InstanceType',
             Default='t2.micro',
             ConstraintDescription='must be a valid EC2 instance type.',
@@ -57,6 +48,15 @@ class EC2Parameters(object):
                 'i2.4xlarge', 'i2.8xlarge', 'd2.xlarge', 'd2.2xlarge',
                 'd2.4xlarge', 'd2.8xlarge', 'hi1.4xlarge', 'hs1.8xlarge',
                 'cr1.8xlarge', 'cc2.8xlarge', 'cg1.4xlarge'],
+        ))
+
+        self.template.add_parameter(Parameter(
+            'LinuxType',
+            Default='centos_7',
+            ConstraintDescription='must be either centos_7 or amazon_linux',
+            Type='String',
+            Description='Linux Type',
+            AllowedValues=['centos_7', 'amazon_linux']
         ))
 
         self.template.add_parameter(Parameter(
@@ -118,6 +118,11 @@ class EC2Parameters(object):
                 '180', '365', '400', '545', '731', '1827', '3653'],
             Type='Number',
         ))
+
+        self.template.add_condition(
+            'IsCentos7',
+            Equals(Ref('LinuxType'), 'centos_7')
+        )
 
         return ec2_mappings.attach_mappings(self.template)
 

@@ -1,5 +1,15 @@
 {
     "AWSTemplateFormatVersion": "2010-09-09",
+    "Conditions": {
+        "IsCentos7": {
+            "Fn::Equals": [
+                {
+                    "Ref": "LinuxType"
+                },
+                "centos_7"
+            ]
+        }
+    },
     "Description": "Create a fully bootstrapped Chef node.",
     "Mappings": {
         "AWSInstanceType2Arch": {
@@ -163,7 +173,7 @@
                 "Arch": "HVM64"
             }
         },
-        "AWSRegionArch2AMI": {
+        "AWSRegionArch2AmazonLinuxAMI": {
             "ap-northeast-1": {
                 "HVM64": "ami-374db956",
                 "HVMG2": "ami-e0ee1981",
@@ -225,6 +235,68 @@
                 "PV64": "ami-7f77b31f"
             }
         },
+        "AWSRegionArch2Centos7LinuxAMI": {
+            "ap-northeast-1": {
+                "HVM64": "ami-571e3c30",
+                "HVMG2": "NOT_SUPPORTED",
+                "PV64": "NOT_SUPPORTED"
+            },
+            "ap-northeast-2": {
+                "HVM64": "ami-97cb19f9",
+                "HVMG2": "NOT_SUPPORTED",
+                "PV64": "NOT_SUPPORTED"
+            },
+            "ap-south-1": {
+                "HVM64": "ami-11f0837e",
+                "HVMG2": "NOT_SUPPORTED",
+                "PV64": "NOT_SUPPORTED"
+            },
+            "ap-southeast-1": {
+                "HVM64": "ami-30318f53",
+                "HVMG2": "NOT_SUPPORTED",
+                "PV64": "NOT_SUPPORTED"
+            },
+            "ap-southeast-2": {
+                "HVM64": "ami-24959b47",
+                "HVMG2": "NOT_SUPPORTED",
+                "PV64": "NOT_SUPPORTED"
+            },
+            "cn-north-1": {
+                "HVM64": "NOT_SUPPORTED",
+                "HVMG2": "NOT_SUPPORTED",
+                "PV64": "NOT_SUPPORTED"
+            },
+            "eu-central-1": {
+                "HVM64": "ami-7cbc6e13",
+                "HVMG2": "NOT_SUPPORTED",
+                "PV64": "NOT_SUPPORTED"
+            },
+            "eu-west-1": {
+                "HVM64": "ami-0d063c6b",
+                "HVMG2": "NOT_SUPPORTED",
+                "PV64": "NOT_SUPPORTED"
+            },
+            "sa-east-1": {
+                "HVM64": "ami-864f2dea",
+                "HVMG2": "NOT_SUPPORTED",
+                "PV64": "NOT_SUPPORTED"
+            },
+            "us-east-1": {
+                "HVM64": "ami-ae7bfdb8",
+                "HVMG2": "NOT_SUPPORTED",
+                "PV64": "NOT_SUPPORTED"
+            },
+            "us-west-1": {
+                "HVM64": "ami-7c280d1c",
+                "HVMG2": "NOT_SUPPORTED",
+                "PV64": "NOT_SUPPORTED"
+            },
+            "us-west-2": {
+                "HVM64": "ami-0c2aba6c",
+                "HVMG2": "NOT_SUPPORTED",
+                "PV64": "NOT_SUPPORTED"
+            }
+        },
         "Region2ARNPrefix": {
             "ap-northeast-1": {
                 "ARNPrefix": "arn:aws:"
@@ -261,6 +333,53 @@
             },
             "us-west-2": {
                 "ARNPrefix": "arn:aws:"
+            }
+        },
+        "Region2KeyPair": {
+            "ap-northeast-1": {
+                "key": "tokyo"
+            },
+            "ap-northeast-2": {
+                "key": "seoul"
+            },
+            "ap-south-1": {
+                "key": "mumbai"
+            },
+            "ap-southeast-1": {
+                "key": "singapore"
+            },
+            "ap-southeast-2": {
+                "key": "sydney"
+            },
+            "ca-central-1": {
+                "key": "central-canada"
+            },
+            "cn-north-1": {
+                "key": "NO ACCESS TO CHINA FOR US USERS"
+            },
+            "eu-central-1": {
+                "key": "frankfurt"
+            },
+            "eu-west-1": {
+                "key": "ireland"
+            },
+            "eu-west-2": {
+                "key": "london"
+            },
+            "sa-east-1": {
+                "key": "sao-paulo"
+            },
+            "us-east-1": {
+                "key": "north-virginia"
+            },
+            "us-east-2": {
+                "key": "ohio"
+            },
+            "us-west-1": {
+                "key": "northern-california"
+            },
+            "us-west-2": {
+                "key": "oregon"
             }
         },
         "Region2Principal": {
@@ -315,6 +434,16 @@
         }
     },
     "Outputs": {
+        "LinuxType": {
+            "Description": "The linux type of the EC2 instance.",
+            "Value": {
+                "Fn::If": [
+                    "IsCentos7",
+                    "centos_7",
+                    "amazon_linux"
+                ]
+            }
+        },
         "LogGroupName": {
             "Description": "LogGroupName (Physical ID)",
             "Value": {
@@ -402,10 +531,15 @@
             "Description": "EC2 Instance Size",
             "Type": "String"
         },
-        "KeyName": {
-            "ConstraintDescription": "must be the name of an existing EC2 KeyPair.",
-            "Description": "Name of an existing EC2 KeyPair to enable SSH access to the instance",
-            "Type": "AWS::EC2::KeyPair::KeyName"
+        "LinuxType": {
+            "AllowedValues": [
+                "centos_7",
+                "amazon_linux"
+            ],
+            "ConstraintDescription": "must be either centos_7 or amazon_linux",
+            "Default": "centos_7",
+            "Description": "Linux Type",
+            "Type": "String"
         },
         "LogGroupName": {
             "AllowedPattern": "^[a-zA-Z0-9]*$",
@@ -786,18 +920,40 @@
                     "Ref": "InstanceProfileResource"
                 },
                 "ImageId": {
-                    "Fn::FindInMap": [
-                        "AWSRegionArch2AMI",
+                    "Fn::If": [
+                        "IsCentos7",
                         {
-                            "Ref": "AWS::Region"
+                            "Fn::FindInMap": [
+                                "AWSRegionArch2Centos7LinuxAMI",
+                                {
+                                    "Ref": "AWS::Region"
+                                },
+                                {
+                                    "Fn::FindInMap": [
+                                        "AWSInstanceType2Arch",
+                                        {
+                                            "Ref": "InstanceType"
+                                        },
+                                        "Arch"
+                                    ]
+                                }
+                            ]
                         },
                         {
                             "Fn::FindInMap": [
-                                "AWSInstanceType2Arch",
+                                "AWSRegionArch2AmazonLinuxAMI",
                                 {
-                                    "Ref": "InstanceType"
+                                    "Ref": "AWS::Region"
                                 },
-                                "Arch"
+                                {
+                                    "Fn::FindInMap": [
+                                        "AWSInstanceType2Arch",
+                                        {
+                                            "Ref": "InstanceType"
+                                        },
+                                        "Arch"
+                                    ]
+                                }
                             ]
                         }
                     ]
@@ -806,7 +962,13 @@
                     "Ref": "InstanceType"
                 },
                 "KeyName": {
-                    "Ref": "KeyName"
+                    "Fn::FindInMap": [
+                        "Region2KeyPair",
+                        {
+                            "Ref": "AWS::Region"
+                        },
+                        "key"
+                    ]
                 },
                 "SecurityGroups": [
                     {

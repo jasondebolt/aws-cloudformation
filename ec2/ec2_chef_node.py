@@ -7,7 +7,7 @@ You must have an S3 bucket with the following files
 
 Change the constants below with the names of your chef-client files.
 """
-from troposphere import Base64, FindInMap, Join, Output, GetAtt, Tags
+from troposphere import Base64, FindInMap, Join, Output, GetAtt, Tags, If
 from troposphere import Ref, Template
 from troposphere import cloudformation
 import troposphere.ec2 as ec2
@@ -75,13 +75,21 @@ class ChefNodeEC2Instance(object):
 
         self.template.add_resource(ec2.Instance(
             EC2_INSTANCE_NAME,
-            ImageId=FindInMap(
-                "AWSRegionArch2AMI", Ref("AWS::Region"),
-                FindInMap("AWSInstanceType2Arch",
-                          Ref(self.template.parameters['InstanceType']),
-                          "Arch")),
+            ImageId=If(
+                'IsCentos7',
+                FindInMap(
+                    "AWSRegionArch2Centos7LinuxAMI", Ref("AWS::Region"),
+                    FindInMap("AWSInstanceType2Arch",
+                              Ref(self.template.parameters['InstanceType']),
+                              "Arch")),
+                FindInMap(
+                    "AWSRegionArch2AmazonLinuxAMI", Ref("AWS::Region"),
+                    FindInMap("AWSInstanceType2Arch",
+                              Ref(self.template.parameters['InstanceType']),
+                              "Arch"))
+            ),
             InstanceType=Ref(self.template.parameters['InstanceType']),
-            KeyName=Ref(self.template.parameters['KeyName']),
+            KeyName=FindInMap('Region2KeyPair', Ref('AWS::Region'), 'key'),
             SecurityGroups=[Ref(security_group)],
             IamInstanceProfile=Ref(
                 self.template.resources['InstanceProfileResource']),
@@ -343,6 +351,12 @@ class ChefNodeEC2Instance(object):
             'PublicIp',
             Description='Public IP of the newly created EC2 instance',
             Value=GetAtt(EC2_INSTANCE_NAME, 'PublicIp')
+        ))
+
+        self.template.add_output(Output(
+            'LinuxType',
+            Description='The linux type of the EC2 instance.',
+            Value=If('IsCentos7', 'centos_7', 'amazon_linux')
         ))
         return self.template
 

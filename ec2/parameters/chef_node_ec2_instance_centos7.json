@@ -13,22 +13,22 @@
   },
   {
     "ParameterKey": "RoleName",
-    "ParameterValue": "InstanceRole"
+    "ParameterValue": "ChefNodeRole"
   },
   {
     "ParameterKey": "InstanceProfileName",
-    "ParameterValue": "InstanceProfile"
+    "ParameterValue": "ChefNodeProfile"
   },
   {
     "ParameterKey": "LogPolicyName",
-    "ParameterValue": "LogPolicy"
+    "ParameterValue": "ChefNodeLogPlcy"
   },
   {
     "ParameterKey": "LogGroupName",
-    "ParameterValue": "CloudFormationLogs"
+    "ParameterValue": "ChefNodeLogGrp"
   },
   {
     "ParameterKey": "LogRetentionDays",
-    "ParameterValue": "7"
+    "ParameterValue": "14"
   }
 ]
