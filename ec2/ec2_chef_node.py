@@ -94,27 +94,50 @@ class ChefNodeEC2Instance(object):
             IamInstanceProfile=Ref(
                 self.template.resources['InstanceProfileResource']),
             UserData=Base64(Join('', [
-                '#!/bin/bash -xe\n',
-                'yum update -y \n',
-                'yum update -y aws-cfn-bootstrap\n',
-                '# Install the files and packages from the metadata\n',
-                '/opt/aws/bin/cfn-init -v ',
-                '         --stack ', Ref('AWS::StackName'),
-                '         --resource {0} '.format(EC2_INSTANCE_NAME),
-                '         --configsets InstallAndRun ',
-                '         --region ', Ref('AWS::Region'),
-                '         --role ',
-                Ref(self.template.resources['RoleResource']),
-                '\n',
-                '# Signal the status from cfn-init\n',
-                '/opt/aws/bin/cfn-signal -e $? ',
-                '         --stack ', Ref('AWS::StackName'),
-                '         --resource {0} '.format(EC2_INSTANCE_NAME),
-                '         --region ', Ref('AWS::Region'),
-                '         --role ',
-                Ref(self.template.resources['RoleResource']),
-                '\n'
-            ])),
+                If('IsCentos7',
+                   Join('\n', [
+                       '#!/bin/bash ',
+                       'sudo yum update -y ',
+                       'sudo yum install -y vim ',
+                       'sudo yum install -y epel-release ',
+                       'sudo yum install -y awscli ',
+                       '# Install CFN-BootStrap ',
+                       ('/usr/bin/easy_install --script-dir /opt/aws/bin '
+                        'https://s3.amazonaws.com/cloudformation-examples/'
+                        'aws-cfn-bootstrap-latest.tar.gz '),
+                       ('cp -v /usr/lib/python2*/site-packages/aws_cfn_'
+                        'bootstrap*/init/redhat/cfn-hup /etc/init.d '),
+                       'chmod +x /etc/init.d/cfn-hup ',
+                       ]),
+                   Join('\n', [
+                       '#!/bin/bash -xe ',
+                       'yum update -y ',
+                       '# Update CFN-BootStrap ',
+                       'yum update -y aws-cfn-bootstrap',
+                       'sudo yum install -y awslogs ',
+                       ])),
+                Join('', [
+                    '# Install the files and packages from the metadata\n'
+                    '/opt/aws/bin/cfn-init -v ',
+                    '         --stack ', Ref('AWS::StackName'),
+                    '         --resource ', EC2_INSTANCE_NAME,
+                    '         --configsets InstallAndRun',
+                    '         --region ', Ref('AWS::Region'),
+                    '         --role ',
+                    Ref(self.template.resources['RoleResource']),
+                    '\n',
+                    '# Signal the status from cfn-init\n',
+                    '/opt/aws/bin/cfn-signal -e $? '
+                    '         --stack ', Ref('AWS::StackName'),
+                    '         --resource ', EC2_INSTANCE_NAME,
+                    '         --region ', Ref('AWS::Region'),
+                    '         --role ',
+                    Ref(self.template.resources['RoleResource']),
+                    '\n'
+                    ]),
+                ]
+                                )
+                           ),
             Metadata=cloudformation.Metadata(
                 cloudformation.Init(
                     cloudformation.InitConfigSets(
@@ -130,31 +153,41 @@ class ChefNodeEC2Instance(object):
                         },
                         files={
                             '/etc/cfn/cfn-hup.conf': {
-                                'content': Join('', [
-                                    '[main]\n',
-                                    'stack=', Ref('AWS::StackId'), '\n',
-                                    'region=', Ref('AWS::Region'), '\n',
-                                    'interval=1', '\n'
+                                'content': Join('\n', [
+                                    '[main]',
+                                    'stack={{stackid}}',
+                                    'region={{region}}',
+                                    'interval=1'
                                     ]),
+                                'context': {
+                                    'stackid': Ref('AWS::StackId'),
+                                    'region': Ref('AWS::Region')
+                                },
                                 'mode': '000400',
                                 'owner': 'root',
                                 'group': 'root'
                             },
                             '/etc/cfn/hooks.d/cfn-auto-reloader.conf': {
-                                'content': Join('', [
-                                    '[cfn-auto-reloader-hook]\n',
-                                    'triggers=post.update\n',
-                                    ('path=Resources.{0}.Metadata.'
-                                     'AWS::CloudFormation::Init\n'
-                                     .format(EC2_INSTANCE_NAME)),
-                                    'action=/opt/aws/bin/cfn-init -v ',
-                                    '     --stack ', Ref('AWS::StackName'),
-                                    '     --resource {0} '
-                                    .format(EC2_INSTANCE_NAME),
-                                    '     --configsets InstallAndRun ',
-                                    '     --region ', Ref('AWS::Region'), '\n',
-                                    'runas=root\n'
+                                'content': Join('\n', [
+                                    '[cfn-auto-reloader-hook]',
+                                    'triggers=post.update',
+                                    ('path=Resources.{{instance_name}}'
+                                     '.Metadata'
+                                     '.AWS::CloudFormation::Init'),
+                                    ('action=/opt/aws/bin/cfn-init -v '
+                                     '     --stack {{stack_name}} '
+                                     '     --resource {{instance_name}} '
+                                     '     --configsets {{config_sets}} '
+                                     '     --region {{region}} '),
+                                    'runas={{run_as}}'
                                 ]),
+                                'context': {
+                                    'instance_name': EC2_INSTANCE_NAME,
+                                    'stack_name': Ref('AWS::StackName'),
+                                    'region': Ref('AWS::Region'),
+                                    'config_sets': 'InstallAndRun',
+                                    'run_as': 'root'
+                                }
                             }
                         },
                         services={
@@ -180,79 +213,72 @@ class ChefNodeEC2Instance(object):
                         }
                     ),
                     InstallLogs=cloudformation.InitConfig(
-                        packages={
-                            'yum': {
-                                'awslogs': []
-                            }
-                        },
                         files={
                             '/etc/awslogs/awslogs.conf': {
-                                'content': Join('', [
-                                    '[general]\n',
-                                    'state_file= /var/awslogs/',
-                                    'state/agent-state\n',
-                                    '[/var/log/cloud-init.log]\n',
-                                    'file = /var/log/cloud-init.log\n',
-                                    Join('', ['log_group_name = ',
-                                              Ref(self.template.resources[
-                                                  'LogGroupResource']), '\n']),
-                                    'log_stream_name = ',
-                                    '{instance_id}/cloud-init.log\n',
-                                    'datetime_format = \n',
-
-                                    '[/var/log/cloud-init-output.log]\n',
-                                    'file = /var/log/cloud-init-output.log\n',
-                                    Join('', ['log_group_name = ',
-                                              Ref(self.template.resources[
-                                                  'LogGroupResource']), '\n']),
-                                    'log_stream_name = ',
-                                    '{instance_id}/cloud-init-output.log\n',
-                                    'datetime_format = \n',
-
-                                    '[/var/log/cfn-init.log]\n',
-                                    'file = /var/log/cfn-init.log\n',
-                                    Join('', ['log_group_name = ',
-                                              Ref(self.template.resources[
-                                                  'LogGroupResource']), '\n']),
-                                    'log_stream_name = ',
-                                    '{instance_id}/cfn-init.log\n',
-                                    'datetime_format = \n',
-
-                                    '[/var/log/cfn-hup.log]\n',
-                                    'file = /var/log/cfn-hup.log\n',
-                                    Join('', ['log_group_name = ',
-                                              Ref(self.template.resources[
-                                                  'LogGroupResource']), '\n']),
-                                    'log_stream_name = ',
-                                    '{instance_id}/cfn-hup.log\n',
-                                    'datetime_format = \n',
-
-                                    '[/var/log/cfn-wire.log]\n',
-                                    'file = /var/log/cfn-wire.log\n',
-                                    Join('', ['log_group_name = ',
-                                              Ref(self.template.resources[
-                                                  'LogGroupResource']), '\n']),
-                                    'log_stream_name = ',
-                                    '{instance_id}/cfn-wire.log\n',
-                                    'datetime_format = \n',
-
-                                    '[/var/log/httpd]\n',
-                                    'file = /var/log/httpd/*\n',
-                                    Join('', ['log_group_name = ',
-                                              Ref(self.template.resources[
-                                                  'LogGroupResource']), '\n']),
-                                    'log_stream_name = ',
-                                    '{instance_id}/httpd\n',
-                                    'datetime_format = %d/%b/%Y:%H:%M:%S\n'
-                                ])
+                                'content': Join('\n', [
+                                    '[general]',
+                                    ('state_file= /var/awslogs/'
+                                     'state/agent-state'),
+                                    '',
+                                    '[/var/log/cloud-init.log]',
+                                    'file = /var/log/cloud-init.log',
+                                    'log_group_name = {{log_group_name}}',
+                                    ('log_stream_name = '
+                                     '{instance_id}/cloud-init.log'),
+                                    'datetime_format = {{datetime_format}}',
+                                    '',
+                                    '[/var/log/cloud-init-output.log]',
+                                    'file = /var/log/cloud-init-output.log',
+                                    'log_group_name = {{log_group_name}}',
+                                    ('log_stream_name = '
+                                     '{instance_id}/cloud-init-output.log'),
+                                    'datetime_format = {{datetime_format}}',
+                                    '',
+                                    '[/var/log/cfn-init.log]',
+                                    'file = /var/log/cfn-init.log',
+                                    'log_group_name = {{log_group_name}}',
+                                    ('log_stream_name = '
+                                     '{instance_id}/cfn-init.log'),
+                                    'datetime_format = {{datetime_format}}',
+                                    '',
+                                    '[/var/log/cfn-hup.log]',
+                                    'file = /var/log/cfn-hup.log',
+                                    'log_group_name = {{log_group_name}}',
+                                    ('log_stream_name = '
+                                     '{instance_id}/cfn-hup.log'),
+                                    'datetime_format = {{datetime_format}}',
+                                    '',
+                                    '[/var/log/cfn-wire.log]',
+                                    'file = /var/log/cfn-wire.log',
+                                    'log_group_name = {{log_group_name}}',
+                                    ('log_stream_name = '
+                                     '{instance_id}/cfn-wire.log'),
+                                    'datetime_format = {{datetime_format}}',
+                                    '',
+                                    '[/var/log/httpd]',
+                                    'file = /var/log/httpd/*',
+                                    'log_group_name = {{log_group_name}}',
+                                    ('log_stream_name = '
+                                     '{instance_id}/httpd'),
+                                    'datetime_format = {{datetime_format}}'
+                                ]),
+                                'context': {
+                                    'log_group_name': Ref(
+                                        self.template.resources[
+                                            'LogGroupResource']),
+                                    'datetime_format': '%d/%b/%Y:%H:%M:%S'
+                                }
                             },
                             '/etc/awslogs/awscli.conf': {
-                                'content': Join('', [
-                                    '[plugins]\n',
-                                    'cwlogs = cwlogs\n',
-                                    '[default]\n',
-                                    'region = ', Ref('AWS::Region'), '\n',
+                                'content': Join('\n', [
+                                    '[plugins]',
+                                    'cwlogs = cwlogs',
+                                    '[default]',
+                                    'region = {{region}}'
                                 ]),
+                                'context': {
+                                    'region': Ref('AWS::Region')
+                                },
                                 'mode': '000444',
                                 'owner': 'root',
                                 'group': 'root'
@@ -268,6 +294,21 @@ class ChefNodeEC2Instance(object):
                                     'CFNTEST': 'I come from install_logs.'
                                 },
                                 'cwd': '~'
+                            },
+                            '03_install_aws_logs_if_centos': {
+                                'command': If('IsCentos7', Join('\n', [
+                                    ('curl https://s3.amazonaws.com/aws-'
+                                     'cloudwatch/downloads/latest/awslogs-'
+                                     'agent-setup.py -O'),
+                                    Join('', [
+                                        'sudo python ./awslogs-agent-setup.py',
+                                        '   --configfile /etc/awslogs/awslogs',
+                                        '.conf   --non-interactive  --region ',
+                                        Ref('AWS::Region')])
+                                    ]), Join('', [
+                                        'echo "not installing awslogs from ',
+                                        'from source"'
+                                        ]))
                             }
                         },
                         services={
@@ -323,10 +364,7 @@ class ChefNodeEC2Instance(object):
                                 },
                                 'cwd': '~'
                             },
-                            '02_docker': {
-                                'command': 'usermod -a -G docker ec2-user'
-                            },
-                            '03_chef_bootstrap': {
+                            '02_chef_bootstrap': {
                                 'command': (
                                     'chef-client -j '
                                     '/etc/chef/first-run.json'
