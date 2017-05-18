@@ -1,0 +1,3 @@
+[submodule "cloudy"]
+	path = cloudy
+	url = https://github.com/jasondebolt/cloudy
