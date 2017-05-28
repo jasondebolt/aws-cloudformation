@@ -1,5 +1,5 @@
 from troposphere import Base64, Select, FindInMap, GetAtt, GetAZs, Join, Output, If, And, Not, Or, Equals, Condition
-from troposphere import Parameter, Ref, Tags, Template
+from troposphere import Parameter, Ref, Tags, Template, Export
 from troposphere.cloudformation import Init
 from troposphere.cloudfront import Distribution, DistributionConfig
 from troposphere.cloudfront import Origin, DefaultCacheBehavior
@@ -210,41 +210,49 @@ RouteTablePrivateAZ2 = t.add_resource(RouteTable(
 VPCID = t.add_output(Output(
     "VPCID",
     Value=Ref(VPCBase),
+    Export=Export(Join("", [Ref("AWS::StackName"), "-VPCID"]))
 ))
 
 SubnetPublicAZ1 = t.add_output(Output(
     "SubnetPublicAZ1",
     Value=Ref(PublicNetAZ1),
+    Export=Export(Join("", [Ref("AWS::StackName"), "-SubnetPublicAZ1"]))
 ))
 
 SubnetPrivateAZ1 = t.add_output(Output(
     "SubnetPrivateAZ1",
     Value=Ref(PrivateNetAZ1),
+    Export=Export(Join("", [Ref("AWS::StackName"), "-SubnetPrivateAZ1"]))
 ))
 
 ElasticIP1 = t.add_output(Output(
     "ElasticIP1",
     Value=Ref(EIPNATAZ1),
+    Export=Export(Join("", [Ref("AWS::StackName"), "-ElasticIP1"]))
 ))
 
 ElasticIP2 = t.add_output(Output(
     "ElasticIP2",
     Value=Ref(EIPNATAZ2),
+    Export=Export(Join("", [Ref("AWS::StackName"), "-ElasticIP2"]))
 ))
 
 SubnetPublicAZ2 = t.add_output(Output(
     "SubnetPublicAZ2",
     Value=Ref(PublicNetAZ2),
+    Export=Export(Join("", [Ref("AWS::StackName"), "-SubnetPublicAZ2"]))
 ))
 
 DefaultSG = t.add_output(Output(
     "DefaultSG",
     Value=GetAtt(VPCBase, "DefaultSecurityGroup"),
+    Export=Export(Join("", [Ref("AWS::StackName"), "-DefaultSG"]))
 ))
 
 SubnetPrivateAZ2 = t.add_output(Output(
     "SubnetPrivateAZ2",
     Value=Ref(PrivateNetAZ2),
+    Export=Export(Join("", [Ref("AWS::StackName"), "-SubnetPrivateAZ2"]))
 ))
 
 print(t.to_json())

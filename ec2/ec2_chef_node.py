@@ -7,7 +7,7 @@ You must have an S3 bucket with the following files
 
 Change the constants below with the names of your chef-client files.
 """
-from troposphere import Base64, FindInMap, Join, Output, GetAtt, Tags, If
+from troposphere import Base64, FindInMap, Join, Output, GetAtt, Tags, If, ImportValue
 from troposphere import Ref, Template
 from troposphere import cloudformation
 import troposphere.ec2 as ec2
@@ -68,6 +68,7 @@ class ChefNodeEC2Instance(object):
                     CidrIp='0.0.0.0/0'
                 )
             ],
+            VpcId=ImportValue("prod2-VPCID"),
             Tags=Tags(
                 Name='{0}SecurityGroup'.format(EC2_INSTANCE_NAME)
             )
@@ -90,7 +91,8 @@ class ChefNodeEC2Instance(object):
             ),
             InstanceType=Ref(self.template.parameters['InstanceType']),
             KeyName=FindInMap('Region2KeyPair', Ref('AWS::Region'), 'key'),
-            SecurityGroups=[Ref(security_group)],
+            SecurityGroupIds=[Ref(security_group)],
+            SubnetId=ImportValue("prod2-SubnetPublicAZ2"),
             IamInstanceProfile=Ref(
                 self.template.resources['InstanceProfileResource']),
             UserData=Base64(Join('', [

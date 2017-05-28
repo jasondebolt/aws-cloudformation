@@ -938,11 +938,14 @@
                         "key"
                     ]
                 },
-                "SecurityGroups": [
+                "SecurityGroupIds": [
                     {
                         "Ref": "SecurityGroup"
                     }
                 ],
+                "SubnetId": {
+                    "Fn::ImportValue": "prod2-SubnetPublicAZ2"
+                },
                 "Tags": [
                     {
                         "Key": "Name",
@@ -1171,7 +1174,10 @@
                         "Key": "Name",
                         "Value": "ChefNodeInstanceSecurityGroup"
                     }
-                ]
+                ],
+                "VpcId": {
+                    "Fn::ImportValue": "prod2-VPCID"
+                }
             },
             "Type": "AWS::EC2::SecurityGroup"
         }
